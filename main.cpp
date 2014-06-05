@@ -23,21 +23,25 @@ void printUsage(int argc, char* argv[])
  */
 int main(int argc, char* argv[])
 {
-  if(argc < 2)
+  if(argc < 1)
     {
     std::cerr << "ERROR: No argument specified\n" << std::endl;
     printUsage(argc, argv);
     return 1;
     }
-  else if(std::string(argv[1]) == "--help")
-    {
-    printUsage(argc, argv);
-    return 0;
-    }
+//  else if(std::string(argv[1]) == "--help")
+//    {
+//    printUsage(argc, argv);
+//    return 0;
+//    }
 
   try
     {
     VruiVTK application(argc, argv);
+    if(argc > 1)
+      {
+      application.setFileName(argv[1]);
+      }
     application.run();
     return 0;
     }

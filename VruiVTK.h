@@ -42,6 +42,10 @@ public:
   VruiVTK(int& argc,char**& argv);
   virtual ~VruiVTK(void);
 
+  /* Methods to set/get the filename to read */
+  void setFileName(const char* name);
+  const char* getFileName(void);
+
   /* Methods to manage render context */
   virtual void initContext(GLContextData& contextData) const;
   virtual void display(GLContextData& contextData) const;

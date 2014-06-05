@@ -24,6 +24,7 @@
 #include <vtkOBJReader.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
+#include <vtkCubeSource.h>
 
 // VruiVTK includes
 #include "VruiVTK.h"
@@ -34,12 +35,6 @@ VruiVTK::VruiVTK(int& argc,char**& argv)
   FileName(0),
   mainMenu(0)
 {
-  if(argc > 1)
-    {
-    this->FileName = new char[strlen(argv[1]) + 1];
-    strcpy(this->FileName, argv[1]);
-    }
-
   /* Create the user interface: */
   mainMenu=createMainMenu();
   Vrui::setMainMenu(mainMenu);
@@ -53,6 +48,10 @@ VruiVTK::VruiVTK(int& argc,char**& argv)
   this->ren = vtkSmartPointer<vtkExternalOpenGLRenderer>::New();
   this->actor = vtkSmartPointer<vtkActor>::New();
   this->ren->AddActor(this->actor);
+//  this->renWin->SetAlphaBitPlanes(1);
+//  this->ren->SetUseDepthPeeling(1);
+//  this->ren->SetMaximumNumberOfPeels(50);
+//  this->ren->SetOcclusionRatio(0.1);
 }
 
 //----------------------------------------------------------------------------
@@ -60,6 +59,27 @@ VruiVTK::~VruiVTK(void)
 {
   /* Delete the user interface: */
   delete mainMenu;
+}
+
+//----------------------------------------------------------------------------
+void VruiVTK::setFileName(const char* name)
+{
+  if(this->FileName && name && (!strcmp(this->FileName, name)))
+    {
+    return;
+    }
+  if(this->FileName && name)
+    {
+    delete [] this->FileName;
+    }
+  this->FileName = new char[strlen(name) + 1];
+  strcpy(this->FileName, name);
+}
+
+//----------------------------------------------------------------------------
+const char* VruiVTK::getFileName(void)
+{
+  return this->FileName;
 }
 
 //----------------------------------------------------------------------------
@@ -162,9 +182,17 @@ void VruiVTK::initContext(GLContextData& contextData) const
   this->renWin->AddRenderer(this->ren.GetPointer());
   vtkNew<vtkPolyDataMapper> mapper;
   this->actor->SetMapper(mapper.GetPointer());
-  vtkNew<vtkOBJReader> reader;
-  reader->SetFileName(this->FileName);
-  mapper->SetInputConnection(reader->GetOutputPort());
+  if(this->FileName)
+    {
+    vtkNew<vtkOBJReader> reader;
+    reader->SetFileName(this->FileName);
+    mapper->SetInputConnection(reader->GetOutputPort());
+    }
+  else
+    {
+    vtkNew<vtkCubeSource> cube;
+    mapper->SetInputConnection(cube->GetOutputPort());
+    }
 }
 
 //----------------------------------------------------------------------------
