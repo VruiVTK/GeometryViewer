@@ -12,12 +12,6 @@
 // VTK includes
 #include <vtkSmartPointer.h>
 
-/* Forward declarations: */
-namespace Misc
-{
-  class CallbackData;
-}
-
 namespace GLMotif
 {
   class Popup;
@@ -36,6 +30,9 @@ private:
 
   /* Private methods: */
   GLMotif::PopupMenu* createMainMenu(void); // Creates the program's main menu
+
+  /* Name of file to load */
+  char* FileName;
 
   /* Constructors and destructors: */
 public:

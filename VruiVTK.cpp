@@ -16,14 +16,13 @@
 
 // VTK includes
 #include <vtkActor.h>
-#include <vtkCubeSource.h>
 #include <vtkExternalOpenGLRenderer.h>
 #include "vtkExternalOpenGLRenderWindow.h"
 #include <vtkLightCollection.h>
 #include <vtkLight.h>
 #include <vtkNew.h>
+#include <vtkOBJReader.h>
 #include <vtkPolyDataMapper.h>
-#include <vtkSphereSource.h>
 
 // VruiVTK includes
 #include "VruiVTK.h"
@@ -34,11 +33,11 @@ GLMotif::PopupMenu* VruiVTK::createMainMenu(void)
   /* Create a top-level shell for the main menu: */
   GLMotif::PopupMenu* mainMenuPopup =
     new GLMotif::PopupMenu("MainMenuPopup",Vrui::getWidgetManager());
-  mainMenuPopup->setTitle("Interactive Globe");
-  
+  mainMenuPopup->setTitle("Interaction");
+
   /* Create the actual menu inside the top-level shell: */
   GLMotif::Menu* mainMenu = new GLMotif::Menu("MainMenu",mainMenuPopup,false);
-  
+
   /* Create a button to reset the navigation coordinates
    * to the default (showing the entire Earth):
    */
@@ -46,10 +45,10 @@ GLMotif::PopupMenu* VruiVTK::createMainMenu(void)
     new GLMotif::Button("CenterDisplayButton",mainMenu,"Center Display");
   centerDisplayButton->getSelectCallbacks().add(
     this,&VruiVTK::centerDisplayCallback);
-  
+
   /* Calculate the main menu's proper layout: */
   mainMenu->manageChild();
-  
+
   /* Return the created top-level shell: */
   return mainMenuPopup;
 }
@@ -57,15 +56,22 @@ GLMotif::PopupMenu* VruiVTK::createMainMenu(void)
 //----------------------------------------------------------------------------
 VruiVTK::VruiVTK(int& argc,char**& argv)
   :Vrui::Application(argc,argv),
+  FileName(0),
   mainMenu(0)
 {
+  if(argc > 1)
+    {
+    this->FileName = new char[strlen(argv[1]) + 1];
+    strcpy(this->FileName, argv[1]);
+    }
+
   /* Create the user interface: */
   mainMenu=createMainMenu();
   Vrui::setMainMenu(mainMenu);
-  
+
   /* Initialize Vrui navigation transformation: */
   centerDisplayCallback(0);
- 
+
   /* Initialize VTK renderwindow and renderer */
   this->renWin =
     vtkSmartPointer<vtkExternalOpenGLRenderWindow>::New();
@@ -84,26 +90,17 @@ void VruiVTK::initContext(GLContextData& contextData) const
 {
   this->renWin->AddRenderer(this->ren.GetPointer());
   vtkNew<vtkPolyDataMapper> mapper;
-  vtkNew<vtkPolyDataMapper> mapper1;
   vtkNew<vtkActor> actor;
-  vtkNew<vtkActor> actor1;
   actor->SetMapper(mapper.GetPointer());
-  actor1->SetMapper(mapper1.GetPointer());
   this->ren->AddActor(actor.GetPointer());
-  this->ren->AddActor(actor1.GetPointer());
   this->ren->AutomaticLightCreationOff();
-  this->ren->PreserveColorBufferOn();
-  this->ren->PreserveDepthBufferOn();
   this->ren->RemoveAllLights();
   vtkNew<vtkLight> light;
   light->SetLightTypeToSceneLight();
   this->ren->AddLight(light.GetPointer());
-  vtkNew<vtkCubeSource> ss;
-  vtkNew<vtkSphereSource> ss1;
-  ss1->SetRadius(1.5);
-  ss1->SetCenter(2,0,1);
-  mapper->SetInputConnection(ss->GetOutputPort());
-  mapper1->SetInputConnection(ss1->GetOutputPort());
+  vtkNew<vtkOBJReader> reader;
+  reader->SetFileName(this->FileName);
+  mapper->SetInputConnection(reader->GetOutputPort());
 }
 
 //----------------------------------------------------------------------------
