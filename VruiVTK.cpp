@@ -23,6 +23,7 @@
 #include <vtkNew.h>
 #include <vtkOBJReader.h>
 #include <vtkPolyDataMapper.h>
+#include <vtkSphereSource.h>
 
 // VruiVTK includes
 #include "VruiVTK.h"
@@ -92,15 +93,15 @@ void VruiVTK::initContext(GLContextData& contextData) const
   vtkNew<vtkPolyDataMapper> mapper;
   vtkNew<vtkActor> actor;
   actor->SetMapper(mapper.GetPointer());
-  this->ren->AddActor(actor.GetPointer());
-  this->ren->AutomaticLightCreationOff();
-  this->ren->RemoveAllLights();
-  vtkNew<vtkLight> light;
-  light->SetLightTypeToSceneLight();
-  this->ren->AddLight(light.GetPointer());
+
   vtkNew<vtkOBJReader> reader;
   reader->SetFileName(this->FileName);
   mapper->SetInputConnection(reader->GetOutputPort());
+
+  // For testing
+//  vtkNew<vtkSphereSource> sphere;
+//  mapper->SetInputConnection(sphere->GetOutputPort());
+  this->ren->AddActor(actor.GetPointer());
 }
 
 //----------------------------------------------------------------------------
