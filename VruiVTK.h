@@ -4,7 +4,8 @@
 // OpenGL/Motif includes
 #include <GL/gl.h>
 #include <GL/GLObject.h>
-#include <GLMotif/ToggleButton.h>
+#include <GLMotif/Slider.h>
+#include <GLMotif/DropdownBox.h>
 
 // Vrui includes
 #include <Vrui/Application.h>
@@ -12,14 +13,16 @@
 // VTK includes
 #include <vtkSmartPointer.h>
 
+/* Forward Declarations */
 namespace GLMotif
 {
   class Popup;
   class PopupMenu;
 }
 
-class vtkExternalOpenGLRenderWindow;
+class vtkActor;
 class vtkExternalOpenGLRenderer;
+class vtkExternalOpenGLRenderWindow;
 
 class VruiVTK:public Vrui::Application,public GLObject
 {
@@ -39,13 +42,21 @@ public:
   VruiVTK(int& argc,char**& argv);
   virtual ~VruiVTK(void);
 
-  /* Methods: */
+  /* Methods to manage render context */
   virtual void initContext(GLContextData& contextData) const;
   virtual void display(GLContextData& contextData) const;
-  void centerDisplayCallback(Misc::CallbackData* cbData);
 
-  vtkSmartPointer<vtkExternalOpenGLRenderWindow> renWin;
+  /* Callback methods */
+  void centerDisplayCallback(Misc::CallbackData* cbData);
+  void opacitySliderCallback(GLMotif::Slider::ValueChangedCallbackData* cbData);
+  void reprDropdownBoxCallback(GLMotif::DropdownBox::ValueChangedCallbackData* cbData);
+
+  /* Methods to create widgets */
+  GLMotif::Popup* createRenderOptionsMenu(void);
+
+  vtkSmartPointer<vtkActor> actor;
   vtkSmartPointer<vtkExternalOpenGLRenderer> ren;
+  vtkSmartPointer<vtkExternalOpenGLRenderWindow> renWin;
 };
 
 #endif //_VRUIVTK_H
