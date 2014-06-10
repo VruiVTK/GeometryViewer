@@ -1,65 +1,124 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
+
   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Vruivtk by VruiVTK</title>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Vruivtk : Application demonstrating the use of vtkRenderingExternal module to render VTK objects in the VRUI context" />
 
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <script src="javascripts/scale.fix.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Vruivtk</title>
   </head>
+
   <body>
-    <div class="wrapper">
-      <header>
-        <h1 class="header">Vruivtk</h1>
-        <p class="header">Application demonstrating the use of vtkRenderingExternal module to render VTK objects in the VRUI context</p>
 
-        <ul>
-          <li class="download"><a class="buttons" href="https://github.com/VruiVTK/VruiVTK/zipball/master">Download ZIP</a></li>
-          <li class="download"><a class="buttons" href="https://github.com/VruiVTK/VruiVTK/tarball/master">Download TAR</a></li>
-          <li><a class="buttons github" href="https://github.com/VruiVTK/VruiVTK">View On GitHub</a></li>
-        </ul>
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/VruiVTK/VruiVTK">View on GitHub</a>
 
-        <p class="header">This project is maintained by <a class="header name" href="https://github.com/VruiVTK">VruiVTK</a></p>
+          <h1 id="project_title">Vruivtk</h1>
+          <h2 id="project_tagline">Application demonstrating the use of vtkRenderingExternal module to render VTK objects in the VRUI context</h2>
 
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/VruiVTK/VruiVTK/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/VruiVTK/VruiVTK/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
 
-      </header>
-      <section>
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
         <h3>
 <a name="welcome-to-vruivtk" class="anchor" href="#welcome-to-vruivtk"><span class="octicon octicon-link"></span></a>Welcome to VruiVTK</h3>
 
 <p>This application demonstrates use of the new vtkRenderingExternal module for VRUI and VTK integration.</p>
 
 <h3>
+<a name="supported-operating-systems" class="anchor" href="#supported-operating-systems"><span class="octicon octicon-link"></span></a>Supported Operating Systems</h3>
+
+<ul>
+<li>Linux</li>
+<li>Mac OSX</li>
+</ul><h3>
 <a name="prerequisites" class="anchor" href="#prerequisites"><span class="octicon octicon-link"></span></a>Prerequisites</h3>
+
+<p>NOTE: To build VruiVTK along with all its prerequisites, simply build the superbuild from <a href="https://github.com/vruivtk/Vruivtksuperbuild">VruiVTKSuperbuild</a></p>
 
 <p>VruiVTK application requires the following software to be built and installed.</p>
 
 <ul>
-<li>Vrui</li>
-<li>VTK with the vtkRenderingExternal module turned ON. (NOTE: vtkRenderingExternal is not in VTK-master and the latest code can be obtained from: <a href="https://github.com/sankhesh/VTK/tree/Rendering_External_Module">https://github.com/sankhesh/VTK/tree/Rendering_External_Module</a>
-</li>
-<li>TCLAP (<a href="http://tclap.sourceforge.net/">http://tclap.sourceforge.net/</a>) </li>
+<li><a href="http://cmake.org">CMake</a></li>
+<li><a href="http://idav.ucdavis.edu/%7Eokreylos/ResDev/Vrui/">Vrui</a></li>
+<li><a href="https://github.com/sankhesh/VTK/tree/Rendering_External_Module">VTK with the vtkRenderingExternal module turned ON</a></li>
+<li>
+<a href="http://tclap.sourceforge.net/">TCLAP</a> </li>
 </ul><h3>
 <a name="clone-vruivtk-source" class="anchor" href="#clone-vruivtk-source"><span class="octicon octicon-link"></span></a>Clone VruiVTK source</h3>
 
 <p>The VruiVTK application can be built from source obtained using one of the download links on this page or using the commandline as follows:</p>
 
-<pre><code>$ git clone https://github.com/VruiVTK/VruiVTK.git
+<p><code>
+$ git clone https://github.com/VruiVTK/VruiVTK.git
+</code></p>
+
+<p>The above command creates a directory <em>VruiVTK</em> with the source code.</p>
+
+<h3>
+<a name="configure-instructions" class="anchor" href="#configure-instructions"><span class="octicon octicon-link"></span></a>Configure Instructions</h3>
+
+<p>Configure the build using CMake.</p>
+
+<p>Set the following CMake variables:</p>
+
+<pre><code>* VRUI_PKGCONFIG - Path to pkgconfig directory of your VRUI installation
+* VTK_DIR - Path to the VTK build directory
+* TCLAP_INCLUDE_DIR - Path to include directory of your TCLAP installation
 </code></pre>
 
-<p>The above command creates a directory 'VruiVTK' with the source code.</p>
+<p>Once all the required variables are set, press <code>generate</code> to generate the makefile.</p>
+
+<h3>
+<a name="build-instructions" class="anchor" href="#build-instructions"><span class="octicon octicon-link"></span></a>Build Instructions</h3>
+
+<p>Build using the make tool.</p>
+
+<pre><code>$ make
+</code></pre>
+
+<h3>
+<a name="run-vruivtk" class="anchor" href="#run-vruivtk"><span class="octicon octicon-link"></span></a>Run VruiVTK</h3>
+
+<p>The build step will create an executable <em>VruiVTK</em> under the build directory that can be used to run the application.
+To get usage instructions for the application:</p>
+
+<pre><code>$ VruiVTK --help
+</code></pre>
+
+<p>To render an OBJ file using VTK, use the '-f' or '--fileName' argument.</p>
+
+<pre><code>$ VruiVTK -f cow-nonormals.obj
+</code></pre>
+
+<p>The following image shows VTK rendering an OBJ dataset in the VRUI context. The dataset was obtained from <a href="http://groups.csail.mit.edu/graphics/classes/6.837/F03/models/cow-nonormals.obj">here</a>.</p>
+
+<p><img src="https://drive.google.com/a/kitware.com/file/d/0Bxgq5zla1NcFRnUxVElFcGpRVE0/edit?usp=sharing" alt="VruiVTK Cow Demo"></p>
+
+<p>If no arguments are provided, the application will bring up a VRUI window with a vtkCube rendered at its origin.</p>
       </section>
-      <footer>
-        <p><small>Hosted on <a href="http://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Vruivtk maintained by <a href="https://github.com/VruiVTK">VruiVTK</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
       </footer>
     </div>
-    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
-		
+
+    
+
   </body>
 </html>
