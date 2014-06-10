@@ -94,17 +94,31 @@ $ git clone https://github.com/VruiVTK/VruiVTK.git
 <p>The build step will create an executable <em>VruiVTK</em> under the build directory that can be used to run the application.
 To get usage instructions for the application:</p>
 
-<pre><code>$ VruiVTK --help
+<pre><code>$ ./VruiVTK --help
 </code></pre>
 
 <p>To render an OBJ file using VTK, use the '-f' or '--fileName' argument.</p>
 
-<pre><code>$ VruiVTK -f cow-nonormals.obj
+<pre><code>$ ./VruiVTK -f cow-nonormals.obj
 </code></pre>
+<p><img src="images/Screenshot from 2014-06-10 12_47_34.png" alt="VruiVTK with VTK Cow"></p>
+<p>The above image shows VTK rendering an OBJ dataset in the VRUI context. The dataset was obtained from <a href="http://groups.csail.mit.edu/graphics/classes/6.837/F03/models/cow-nonormals.obj">here</a>.</p>
 
-<p>The following demo video shows VTK rendering an OBJ dataset in the VRUI context. The dataset was obtained from <a href="http://groups.csail.mit.edu/graphics/classes/6.837/F03/models/cow-nonormals.obj">here</a>.</p>
 
 <p>If no arguments are provided, the application will bring up a VRUI window with a vtkCube rendered at its origin.</p>
+<pre><code>$ ./VruiVTK
+</code></pre>
+<p><img src="images/Screenshot from 2014-06-10 12_45_06.png" alt="VruiVTK with vtkCube"></p>
+
+<p> As a demonstration of the integration, a sample menu is added to the application as shown in the following figure. </p>
+<p><img src="images/Screenshot from 2014-06-10 13-05-26.png" alt="VruiVTK with vtkCube"></p>
+
+<p> The <strong>Center Display</strong> button resets the camera and positions the object upright at the origin.
+The <strong>Representation</strong> sub-menu provides custom GUI widgets to control object representation.</p>
+
+<p> The following is a demo video showing most aspects of the VruiVTK application. </p>
+<iframe src="https://docs.google.com/a/kitware.com/file/d/0Bxgq5zla1NcFRnUxVElFcGpRVE0/preview" width="640" height="385"></iframe>
+
       </section>
     </div>
 
