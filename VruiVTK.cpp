@@ -3,6 +3,7 @@
 #include <string>
 
 // OpenGL/Motif includes
+#include <GL/GLContextData.h>
 #include <GL/gl.h>
 #include <GLMotif/CascadeButton.h>
 #include <GLMotif/Menu.h>
@@ -14,26 +15,57 @@
 
 // VRUI includes
 #include <Vrui/Application.h>
+#include <Vrui/Tool.h>
+#include <Vrui/ToolManager.h>
 #include <Vrui/Vrui.h>
 
 // VTK includes
 #include <vtkActor.h>
+#include <vtkCubeSource.h>
 #include <vtkExternalOpenGLRenderer.h>
 #include "vtkExternalOpenGLRenderWindow.h"
+#include <vtkLight.h>
 #include <vtkNew.h>
 #include <vtkOBJReader.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
-#include <vtkCubeSource.h>
 
 // VruiVTK includes
 #include "VruiVTK.h"
 
 //----------------------------------------------------------------------------
+VruiVTK::DataItem::DataItem(void)
+{
+  /* Initialize VTK renderwindow and renderer */
+  this->renWin =
+    vtkSmartPointer<vtkExternalOpenGLRenderWindow>::New();
+  this->ren = vtkSmartPointer<vtkExternalOpenGLRenderer>::New();
+  this->renWin->AddRenderer(this->ren.GetPointer());
+  this->actor = vtkSmartPointer<vtkActor>::New();
+  this->ren->AddActor(this->actor);
+  this->flashlight = vtkSmartPointer<vtkLight>::New();
+  this->flashlight->SwitchOff();
+  this->flashlight->SetLightTypeToHeadlight();
+  this->flashlight->SetColor(0.0, 1.0, 1.0);
+  this->ren->AddLight(this->flashlight);
+//  this->renWin->SetAlphaBitPlanes(1);
+//  this->ren->SetUseDepthPeeling(1);
+//  this->ren->SetMaximumNumberOfPeels(50);
+//  this->ren->SetOcclusionRatio(0.1);
+}
+
+//----------------------------------------------------------------------------
+VruiVTK::DataItem::~DataItem(void)
+{
+}
+
+//----------------------------------------------------------------------------
 VruiVTK::VruiVTK(int& argc,char**& argv)
   :Vrui::Application(argc,argv),
   FileName(0),
-  mainMenu(0)
+  mainMenu(0),
+  Opacity(1.0),
+  RepresentationType(2)
 {
   /* Create the user interface: */
   mainMenu=createMainMenu();
@@ -41,17 +73,6 @@ VruiVTK::VruiVTK(int& argc,char**& argv)
 
   /* Initialize Vrui navigation transformation: */
   centerDisplayCallback(0);
-
-  /* Initialize VTK renderwindow and renderer */
-  this->renWin =
-    vtkSmartPointer<vtkExternalOpenGLRenderWindow>::New();
-  this->ren = vtkSmartPointer<vtkExternalOpenGLRenderer>::New();
-  this->actor = vtkSmartPointer<vtkActor>::New();
-  this->ren->AddActor(this->actor);
-//  this->renWin->SetAlphaBitPlanes(1);
-//  this->ren->SetUseDepthPeeling(1);
-//  this->ren->SetMaximumNumberOfPeels(50);
-//  this->ren->SetOcclusionRatio(0.1);
 }
 
 //----------------------------------------------------------------------------
@@ -177,11 +198,19 @@ GLMotif::Popup* VruiVTK::createRenderOptionsMenu(void)
 }
 
 //----------------------------------------------------------------------------
+void VruiVTK::frame(void)
+{
+}
+
+//----------------------------------------------------------------------------
 void VruiVTK::initContext(GLContextData& contextData) const
 {
-  this->renWin->AddRenderer(this->ren.GetPointer());
+  /* Create a new context data item */
+  DataItem* dataItem = new DataItem();
+  contextData.addDataItem(this, dataItem);
+
   vtkNew<vtkPolyDataMapper> mapper;
-  this->actor->SetMapper(mapper.GetPointer());
+  dataItem->actor->SetMapper(mapper.GetPointer());
   if(this->FileName)
     {
     vtkNew<vtkOBJReader> reader;
@@ -201,8 +230,30 @@ void VruiVTK::display(GLContextData& contextData) const
   /* Save OpenGL state: */
   glPushAttrib(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_ENABLE_BIT|
     GL_LIGHTING_BIT|GL_POLYGON_BIT);
+  /* Get context data item */
+  DataItem* dataItem = contextData.retrieveDataItem<DataItem>(this);
+
+  Vrui::ToolManager* toolManager = Vrui::getToolManager();
+  std::vector<Vrui::Tool*>::const_iterator toolListIter =
+    toolManager->beginTools();
+  for(; toolListIter != toolManager->endTools(); ++toolListIter)
+    {
+    if(std::string((*toolListIter)->getName()).compare("Flashlight") == 0)
+      {
+      dataItem->flashlight->SwitchOn();
+      break;
+      }
+    }
+  if(toolListIter == toolManager->endTools())
+    {
+    dataItem->flashlight->SwitchOff();
+    }
+
+  /* Set actor opacity */
+  dataItem->actor->GetProperty()->SetOpacity(this->Opacity);
+  dataItem->actor->GetProperty()->SetRepresentation(this->RepresentationType);
   /* Render the scene */
-  renWin->Render();
+  dataItem->renWin->Render();
   glPopAttrib();
 }
 
@@ -223,14 +274,12 @@ void VruiVTK::centerDisplayCallback(Misc::CallbackData* cbData)
 void VruiVTK::opacitySliderCallback(
   GLMotif::Slider::ValueChangedCallbackData* cbData)
 {
-  double value = static_cast<double>(cbData->value);
-  this->actor->GetProperty()->SetOpacity(value);
+  this->Opacity = static_cast<double>(cbData->value);
 }
 
 //----------------------------------------------------------------------------
 void VruiVTK::reprDropdownBoxCallback(
   GLMotif::DropdownBox::ValueChangedCallbackData* cbData)
 {
-  int newItem = cbData->newSelectedItem;
-  this->actor->GetProperty()->SetRepresentation(newItem);
+  this->RepresentationType = cbData->newSelectedItem;
 }

@@ -23,11 +23,27 @@ namespace GLMotif
 class vtkActor;
 class vtkExternalOpenGLRenderer;
 class vtkExternalOpenGLRenderWindow;
+class vtkLight;
 
 class VruiVTK:public Vrui::Application,public GLObject
 {
 /* Embedded classes: */
 private:
+  struct DataItem : public GLObject::DataItem
+  {
+  /* Elements */
+  public:
+    /* VTK components */
+    vtkSmartPointer<vtkActor> actor;
+    vtkSmartPointer<vtkExternalOpenGLRenderer> ren;
+    vtkSmartPointer<vtkExternalOpenGLRenderWindow> renWin;
+    vtkSmartPointer<vtkLight> flashlight;
+
+    /* Constructor and destructor*/
+    DataItem(void);
+    virtual ~DataItem(void);
+  };
+
   /* Elements: */
   GLMotif::PopupMenu* mainMenu; // The program's main menu
 
@@ -36,6 +52,12 @@ private:
 
   /* Name of file to load */
   char* FileName;
+
+  /* Opacity value */
+  double Opacity;
+
+  /* Representation Type */
+  int RepresentationType;
 
   /* Constructors and destructors: */
 public:
@@ -49,6 +71,7 @@ public:
   /* Methods to manage render context */
   virtual void initContext(GLContextData& contextData) const;
   virtual void display(GLContextData& contextData) const;
+  virtual void frame(void);
 
   /* Callback methods */
   void centerDisplayCallback(Misc::CallbackData* cbData);
@@ -57,10 +80,6 @@ public:
 
   /* Methods to create widgets */
   GLMotif::Popup* createRenderOptionsMenu(void);
-
-  vtkSmartPointer<vtkActor> actor;
-  vtkSmartPointer<vtkExternalOpenGLRenderer> ren;
-  vtkSmartPointer<vtkExternalOpenGLRenderWindow> renWin;
 };
 
 #endif //_VRUIVTK_H
