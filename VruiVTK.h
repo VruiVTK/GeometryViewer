@@ -11,6 +11,7 @@
 #include <Vrui/Application.h>
 
 // VTK includes
+#include <vtkCommand.h>
 #include <vtkSmartPointer.h>
 
 /* Forward Declarations */
@@ -24,11 +25,25 @@ class vtkActor;
 class vtkExternalOpenGLRenderer;
 class vtkExternalOpenGLRenderWindow;
 class vtkLight;
+class vtkObject;
+class vtkPlane;
+class vtkRenderWindowInteractor;
 
 class VruiVTK:public Vrui::Application,public GLObject
 {
 /* Embedded classes: */
 private:
+
+  class vtkIPWCallback : public vtkCommand
+  {
+  public:
+    static vtkIPWCallback *New();
+    virtual void Execute(vtkObject *caller, unsigned long, void*);
+    vtkIPWCallback();
+    vtkActor *actor;
+    vtkPlane *plane;
+  };
+
   struct DataItem : public GLObject::DataItem
   {
   /* Elements */
@@ -38,6 +53,7 @@ private:
     vtkSmartPointer<vtkExternalOpenGLRenderer> ren;
     vtkSmartPointer<vtkExternalOpenGLRenderWindow> renWin;
     vtkSmartPointer<vtkLight> flashlight;
+    vtkSmartPointer<vtkRenderWindowInteractor> iren;
 
     /* Constructor and destructor*/
     DataItem(void);

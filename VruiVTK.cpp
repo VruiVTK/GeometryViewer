@@ -30,8 +30,39 @@
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
 
+#include <vtkImplicitPlaneWidget2.h>
+#include <vtkImplicitPlaneRepresentation.h>
+#include <vtkPlane.h>
+#include <vtkClipPolyData.h>
+#include <vtkRenderWindowInteractor.h>
+
 // VruiVTK includes
 #include "VruiVTK.h"
+
+//----------------------------------------------------------------------------
+VruiVTK::vtkIPWCallback* VruiVTK::vtkIPWCallback::New()
+{
+  return new VruiVTK::vtkIPWCallback();
+}
+
+//----------------------------------------------------------------------------
+VruiVTK::vtkIPWCallback::vtkIPWCallback()
+  :plane(0),
+  actor(0)
+{
+}
+
+//----------------------------------------------------------------------------
+void VruiVTK::vtkIPWCallback::Execute(vtkObject* caller,
+  unsigned long vtkNotUsed(eventId), void* vtkNotUsed(callData))
+{
+  vtkImplicitPlaneWidget2 *planeWidget =
+    reinterpret_cast<vtkImplicitPlaneWidget2*>(caller);
+  vtkImplicitPlaneRepresentation* rep =
+    reinterpret_cast<vtkImplicitPlaneRepresentation*>(
+      planeWidget->GetRepresentation());
+  rep->GetPlane(this->plane);
+}
 
 //----------------------------------------------------------------------------
 VruiVTK::DataItem::DataItem(void)
@@ -48,6 +79,9 @@ VruiVTK::DataItem::DataItem(void)
   this->flashlight->SetLightTypeToHeadlight();
   this->flashlight->SetColor(0.0, 1.0, 1.0);
   this->ren->AddLight(this->flashlight);
+
+  this->iren = vtkSmartPointer<vtkRenderWindowInteractor>::New();
+  this->iren->SetRenderWindow(this->renWin);
 //  this->renWin->SetAlphaBitPlanes(1);
 //  this->ren->SetUseDepthPeeling(1);
 //  this->ren->SetMaximumNumberOfPeels(50);
@@ -209,19 +243,45 @@ void VruiVTK::initContext(GLContextData& contextData) const
   DataItem* dataItem = new DataItem();
   contextData.addDataItem(this, dataItem);
 
+  vtkNew<vtkPlane> plane;
+  vtkNew<vtkClipPolyData> clipper;
+  clipper->SetClipFunction(plane.GetPointer());
+  clipper->InsideOutOn();
+
   vtkNew<vtkPolyDataMapper> mapper;
   dataItem->actor->SetMapper(mapper.GetPointer());
   if(this->FileName)
     {
     vtkNew<vtkOBJReader> reader;
     reader->SetFileName(this->FileName);
-    mapper->SetInputConnection(reader->GetOutputPort());
+    clipper->SetInputConnection(reader->GetOutputPort());
     }
   else
     {
     vtkNew<vtkCubeSource> cube;
-    mapper->SetInputConnection(cube->GetOutputPort());
+    clipper->SetInputConnection(cube->GetOutputPort());
     }
+  mapper->SetInputConnection(clipper->GetOutputPort());
+
+  vtkNew<vtkProperty> backFaces;
+  backFaces->SetDiffuseColor(0.8, 0.8, 0.4);
+  dataItem->actor->SetBackfaceProperty(backFaces.GetPointer());
+
+  /* Clip polydata widget */
+  vtkNew<VruiVTK::vtkIPWCallback> ipwCallback;
+  ipwCallback->plane = plane.GetPointer();
+  ipwCallback->actor = dataItem->actor;
+
+  vtkNew<vtkImplicitPlaneRepresentation> rep;
+  rep->SetPlaceFactor(1.25);
+  rep->PlaceWidget(dataItem->actor->GetBounds());
+  rep->SetNormal(plane->GetNormal());
+
+  vtkNew<vtkImplicitPlaneWidget2> planeWidget;
+  planeWidget->SetInteractor(dataItem->iren);
+  planeWidget->SetRepresentation(rep.GetPointer());
+  planeWidget->AddObserver(vtkCommand::InteractionEvent,
+    ipwCallback.GetPointer());
 }
 
 //----------------------------------------------------------------------------
@@ -253,6 +313,7 @@ void VruiVTK::display(GLContextData& contextData) const
   dataItem->actor->GetProperty()->SetOpacity(this->Opacity);
   dataItem->actor->GetProperty()->SetRepresentation(this->RepresentationType);
   /* Render the scene */
+  dataItem->iren->Initialize();
   dataItem->renWin->Render();
   glPopAttrib();
 }
