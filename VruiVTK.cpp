@@ -20,10 +20,9 @@
 #include <Vrui/Vrui.h>
 
 // VTK includes
+#include <ExternalVTKWidget.h>
 #include <vtkActor.h>
 #include <vtkCubeSource.h>
-#include <vtkExternalOpenGLRenderer.h>
-#include "vtkExternalOpenGLRenderWindow.h"
 #include <vtkLight.h>
 #include <vtkNew.h>
 #include <vtkOBJReader.h>
@@ -37,21 +36,14 @@
 VruiVTK::DataItem::DataItem(void)
 {
   /* Initialize VTK renderwindow and renderer */
-  this->renWin =
-    vtkSmartPointer<vtkExternalOpenGLRenderWindow>::New();
-  this->ren = vtkSmartPointer<vtkExternalOpenGLRenderer>::New();
-  this->renWin->AddRenderer(this->ren.GetPointer());
+  this->externalVTKWidget = vtkSmartPointer<ExternalVTKWidget>::New();
   this->actor = vtkSmartPointer<vtkActor>::New();
-  this->ren->AddActor(this->actor);
+  this->externalVTKWidget->GetRenderer()->AddActor(this->actor);
   this->flashlight = vtkSmartPointer<vtkLight>::New();
   this->flashlight->SwitchOff();
   this->flashlight->SetLightTypeToHeadlight();
   this->flashlight->SetColor(0.0, 1.0, 1.0);
-  this->ren->AddLight(this->flashlight);
-//  this->renWin->SetAlphaBitPlanes(1);
-//  this->ren->SetUseDepthPeeling(1);
-//  this->ren->SetMaximumNumberOfPeels(50);
-//  this->ren->SetOcclusionRatio(0.1);
+  this->externalVTKWidget->GetRenderer()->AddLight(this->flashlight);
 }
 
 //----------------------------------------------------------------------------
@@ -253,7 +245,7 @@ void VruiVTK::display(GLContextData& contextData) const
   dataItem->actor->GetProperty()->SetOpacity(this->Opacity);
   dataItem->actor->GetProperty()->SetRepresentation(this->RepresentationType);
   /* Render the scene */
-  dataItem->renWin->Render();
+  dataItem->externalVTKWidget->GetRenderWindow()->Render();
   glPopAttrib();
 }
 

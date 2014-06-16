@@ -21,8 +21,7 @@ namespace GLMotif
 }
 
 class vtkActor;
-class vtkExternalOpenGLRenderer;
-class vtkExternalOpenGLRenderWindow;
+class ExternalVTKWidget;
 class vtkLight;
 
 class VruiVTK:public Vrui::Application,public GLObject
@@ -34,9 +33,8 @@ private:
   /* Elements */
   public:
     /* VTK components */
+    vtkSmartPointer<ExternalVTKWidget> externalVTKWidget;
     vtkSmartPointer<vtkActor> actor;
-    vtkSmartPointer<vtkExternalOpenGLRenderer> ren;
-    vtkSmartPointer<vtkExternalOpenGLRenderWindow> renWin;
     vtkSmartPointer<vtkLight> flashlight;
 
     /* Constructor and destructor*/
