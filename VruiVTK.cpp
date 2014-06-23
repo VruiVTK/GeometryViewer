@@ -75,6 +75,7 @@ VruiVTK::DataItem::DataItem(void)
   this->flashlight->SetLightTypeToHeadlight();
   this->flashlight->SetColor(0.0, 1.0, 1.0);
   this->externalVTKWidget->GetRenderer()->AddLight(this->flashlight);
+  this->planeWidget = vtkSmartPointer<vtkImplicitPlaneWidget2>::New();
 }
 
 //----------------------------------------------------------------------------
@@ -266,16 +267,39 @@ void VruiVTK::initContext(GLContextData& contextData) const
   rep->PlaceWidget(dataItem->actor->GetBounds());
   rep->SetNormal(plane->GetNormal());
 
-  vtkNew<vtkImplicitPlaneWidget2> planeWidget;
-  planeWidget->SetInteractor(dataItem->iren);
-  planeWidget->SetRepresentation(rep.GetPointer());
-  planeWidget->AddObserver(vtkCommand::InteractionEvent,
+  dataItem->planeWidget->SetInteractor(dataItem->externalVTKWidget->GetInteractor());
+  dataItem->planeWidget->SetRepresentation(rep.GetPointer());
+  dataItem->planeWidget->AddObserver(vtkCommand::InteractionEvent,
     ipwCallback.GetPointer());
 }
 
 //----------------------------------------------------------------------------
 void VruiVTK::display(GLContextData& contextData) const
 {
+	#if 0
+	/* Print the modelview and projection matrices: */
+	GLdouble mv[16],p[16];
+	glGetDoublev(GL_MODELVIEW_MATRIX,mv);
+	glGetDoublev(GL_PROJECTION_MATRIX,p);
+
+        std::cout << "MV:" << std::endl;
+	for(int i=0;i<4;++i)
+		{
+		for(int j=0;j<4;++j)
+			std::cout<<" "<<std::setw(12)<<mv[i+j*4];
+		std::cout<<std::endl;
+		}
+        std::cout << "P:" << std::endl;
+	for(int i=0;i<4;++i)
+		{
+		#if 1
+		for(int j=0;j<4;++j)
+			std::cout<<" "<<std::setw(12)<<p[i+j*4];
+		std::cout<<std::endl;
+		#endif
+		}
+	std::cout<<std::endl;
+	#endif
   /* Save OpenGL state: */
   glPushAttrib(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_ENABLE_BIT|
     GL_LIGHTING_BIT|GL_POLYGON_BIT);
@@ -302,7 +326,9 @@ void VruiVTK::display(GLContextData& contextData) const
   dataItem->actor->GetProperty()->SetOpacity(this->Opacity);
   dataItem->actor->GetProperty()->SetRepresentation(this->RepresentationType);
   /* Render the scene */
+  dataItem->externalVTKWidget->GetInteractor()->Initialize();
   dataItem->externalVTKWidget->GetRenderWindow()->Render();
+  dataItem->planeWidget->On();
   glPopAttrib();
 }
 

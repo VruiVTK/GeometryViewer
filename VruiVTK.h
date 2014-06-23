@@ -26,7 +26,7 @@ class ExternalVTKWidget;
 class vtkLight;
 class vtkObject;
 class vtkPlane;
-class vtkRenderWindowInteractor;
+class vtkImplicitPlaneWidget2;
 
 class VruiVTK:public Vrui::Application,public GLObject
 {
@@ -51,7 +51,7 @@ private:
     vtkSmartPointer<ExternalVTKWidget> externalVTKWidget;
     vtkSmartPointer<vtkActor> actor;
     vtkSmartPointer<vtkLight> flashlight;
-    vtkSmartPointer<vtkRenderWindowInteractor> iren;
+    vtkSmartPointer<vtkImplicitPlaneWidget2> planeWidget;
 
     /* Constructor and destructor*/
     DataItem(void);
