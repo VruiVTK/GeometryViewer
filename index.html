@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html>
 
+  <script language="javascript">
+     function totop() {
+       scroll(0,0);
+     }
+  </script>
   <head>
     <meta charset='utf-8' />
     <meta http-equiv="X-UA-Compatible" content="chrome=1" />
@@ -94,7 +99,7 @@ $ git clone https://github.com/VruiVTK/VruiVTK.git
 <p>The build step will create an executable <em>VruiVTK</em> under the build directory that can be used to run the application.
 To get usage instructions for the application:</p>
 
-<pre><code>$ ./VruiVTK --help
+<pre><code>$ ./VruiVTK -help
 </code></pre>
 
 <p>To render an OBJ file using VTK, use the '-f' or '--fileName' argument.</p>
@@ -109,6 +114,36 @@ To get usage instructions for the application:</p>
 </code></pre>
 <p><img src="images/Screenshot from 2014-06-10 12_45_06.png" alt="VruiVTK with vtkCube"></p>
 
+<h3>
+<a name="sample-configuration-files" class="anchor" href="#sample-configuration-files"><span class="octicon octicon-link"></span></a>Sample Configuration Files</h3>
+<p>A couple of sample configuration files are added to the <a
+  href="https://github.com/VruiVTK/VruiVTK/tree/master/config">config</a>
+directory. <br>
+To use the sample files simply copy the files to the <code>etc</code> directory of
+your VRUI installation.<br>
+Make sure to backup your existing configuration files before copying the sample ones in.</p>
+
+<p>The sample configuration files are tested to work with an OptiTrack tracker
+with a VRPN server of hostname <em>OptiTrackServer</em>. The server uses the
+<em>Rigid Body Module</em> to configure two rigid bodies:<br>
+<ul>
+<li> Head </li>
+<li> Wand </li>
+</ul>
+The configuration files are merely the default configuration files for
+Vrui-3.1-002 with the required changes made to the <code>3dtv</code>(<a
+  href="https://github.com/VruiVTK/VruiVTK/blob/997766af95465339b1ddc614fa941978fff7c29b/config/VRDevices.cfg#L149-238">VRDevices.cfg</a>,
+<a
+href="https://github.com/VruiVTK/VruiVTK/blob/997766af95465339b1ddc614fa941978fff7c29b/config/Vrui.cfg#L1044-1302">Vrui.cfg</a>) section.
+</p>
+
+<p> To run the device daemon, </p>
+<pre><code>$ <VRUI-install-dir>/bin/VRDeviceDaemon -rootSection 3dtv</code></pre>
+<p> To run the application, </p>
+<pre><code>$ ./VruiVTK -rootSection 3dtv</code></pre>
+
+<h3>
+<a name="demonstration" class="anchor" href="#demonstration"><span class="octicon octicon-link"></span></a>Demonstration</h3>
 <p> As a demonstration of the integration, a sample menu is added to the application as shown in the following figure. </p>
 <p><img src="images/Screenshot from 2014-06-10 13-05-26.png" alt="VruiVTK with vtkCube"></p>
 
@@ -116,7 +151,8 @@ To get usage instructions for the application:</p>
 The <strong>Representation</strong> sub-menu provides custom GUI widgets to control object representation.</p>
 
 <p> The following is a demo video showing most aspects of the VruiVTK application. </p>
-<iframe src="https://docs.google.com/a/kitware.com/file/d/0Bxgq5zla1NcFRnUxVElFcGpRVE0/preview" width="640" height="385"></iframe>
+<iframe src="https://docs.google.com/a/kitware.com/file/d/0Bxgq5zla1NcFRnUxVElFcGpRVE0/preview"
+width="640" height="385" onload="totop()"></iframe>
 
       </section>
     </div>
@@ -128,8 +164,6 @@ The <strong>Representation</strong> sub-menu provides custom GUI widgets to cont
         <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
       </footer>
     </div>
-
-    
 
   </body>
 </html>
