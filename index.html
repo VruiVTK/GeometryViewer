@@ -58,8 +58,6 @@
 <li><a href="http://cmake.org">CMake</a></li>
 <li><a href="http://idav.ucdavis.edu/%7Eokreylos/ResDev/Vrui/">Vrui</a></li>
 <li><a href="https://github.com/sankhesh/VTK/tree/Rendering_External_Module">VTK with the vtkRenderingExternal module turned ON</a></li>
-<li>
-<a href="http://tclap.sourceforge.net/">TCLAP</a> </li>
 </ul><h3>
 <a name="clone-vruivtk-source" class="anchor" href="#clone-vruivtk-source"><span class="octicon octicon-link"></span></a>Clone VruiVTK source</h3>
 
@@ -78,9 +76,8 @@ $ git clone https://github.com/VruiVTK/VruiVTK.git
 
 <p>Set the following CMake variables:</p>
 
-<pre><code>* VRUI_PKGCONFIG - Path to pkgconfig directory of your VRUI installation
+<pre><code>* VRUI_PKGCONFIG_DIR - Path to pkgconfig directory of your VRUI installation
 * VTK_DIR - Path to the VTK build directory
-* TCLAP_INCLUDE_DIR - Path to include directory of your TCLAP installation
 </code></pre>
 
 <p>Once all the required variables are set, press <code>generate</code> to generate the makefile.</p>
@@ -102,7 +99,7 @@ To get usage instructions for the application:</p>
 <pre><code>$ ./VruiVTK -help
 </code></pre>
 
-<p>To render an OBJ file using VTK, use the '-f' or '--fileName' argument.</p>
+<p>To render an OBJ file using VTK, use the '-f' or '-fileName' argument.</p>
 
 <pre><code>$ ./VruiVTK -f cow-nonormals.obj
 </code></pre>
