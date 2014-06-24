@@ -2,6 +2,8 @@
 #include <iostream>
 #include <string>
 
+#define TCLAP_NAMESTARTSTRING "-"
+#define TCLAP_FLAGSTARTSTRING "-"
 #include <tclap/CmdLine.h>
 
 // VruiVTK includes
@@ -22,7 +24,10 @@ int main(int argc, char* argv[])
     TCLAP::CmdLine cmd("Render VTK objects in the VRUI context", ' ', "0.1");
     TCLAP::ValueArg<std::string> fileName("f", "fileName",
       "Name of OBJ file to load using VTK", false, "", "string");
+    TCLAP::ValueArg<std::string> rootSection("", "rootSection",
+      "Name of section to use as rootSection from Vrui.cfg.", false, "", "string");
     cmd.add(fileName);
+    cmd.add(rootSection);
     cmd.parse(argc, argv);
 
     VruiVTK application(argc, argv);
