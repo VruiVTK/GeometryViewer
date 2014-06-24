@@ -2,12 +2,22 @@
 #include <iostream>
 #include <string>
 
-#define TCLAP_NAMESTARTSTRING "-"
-#define TCLAP_FLAGSTARTSTRING "-"
-#include <tclap/CmdLine.h>
-
 // VruiVTK includes
 #include "VruiVTK.h"
+
+void printUsage(void)
+{
+  std::cout << "\nVruiVTK - Render VTK objects in the VRUI context" << std::endl;
+  std::cout << "\nUSAGE:\n\t./VruiVTK [-f <string>] [-h]" << std::endl;
+  std::cout << "\nWhere:" << std::endl;
+  std::cout << "\t-f <string>, -fileName <string>" << std::endl;
+  std::cout << "\tName of OBJ file to load using VTK.\n" << std::endl;
+  std::cout << "\t-h, -help" << std::endl;
+  std::cout << "\tDisplay this usage information and exit." << std::endl;
+  std::cout << "\nAdditionally, all the commandline switches the VRUI " <<
+    "accepts can be passed to VruiVTK.\nFor example, -rootSection," <<
+    " -vruiVerbose, -vruiHelp, etc.\n" << std::endl;
+}
 
 /* Create and execute an application object: */
 /*
@@ -21,17 +31,26 @@ int main(int argc, char* argv[])
 {
   try
     {
-    TCLAP::CmdLine cmd("Render VTK objects in the VRUI context", ' ', "0.1");
-    TCLAP::ValueArg<std::string> fileName("f", "fileName",
-      "Name of OBJ file to load using VTK", false, "", "string");
-    TCLAP::ValueArg<std::string> rootSection("", "rootSection",
-      "Name of section to use as rootSection from Vrui.cfg.", false, "", "string");
-    cmd.add(fileName);
-    cmd.add(rootSection);
-    cmd.parse(argc, argv);
+    std::string name;
+    if(argc > 1)
+      {
+      /* Parse the command-line arguments */
+      for(int i = 1; i < argc; ++i)
+        {
+        if(strcmp(argv[i], "-f")==0 || strcmp(argv[i], "-filename")==0)
+          {
+          name.assign(argv[i+1]);
+          ++i;
+          }
+        if(strcmp(argv[i],"-h")==0 || strcmp(argv[i], "-help")==0)
+          {
+          printUsage();
+          return 0;
+          }
+        }
+      }
 
     VruiVTK application(argc, argv);
-    std::string name = fileName.getValue();
     if(!name.empty())
       {
       application.setFileName(name.c_str());
@@ -39,10 +58,9 @@ int main(int argc, char* argv[])
     application.run();
     return 0;
     }
-  catch (TCLAP::ArgException &e)
+  catch (std::runtime_error e)
     {
-    std::cerr << "Error: Exception " << e.error() <<
-      " for arg " << e.argId() << std::endl;
+    std::cerr << "Error: Exception " << e.what() << "!" << std::endl;
     return 1;
     }
 }
