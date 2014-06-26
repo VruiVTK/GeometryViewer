@@ -24,6 +24,8 @@ class vtkActor;
 class ExternalVTKWidget;
 class vtkLight;
 
+class BaseLocator;
+
 class VruiVTK:public Vrui::Application,public GLObject
 {
 /* Embedded classes: */
@@ -57,8 +59,15 @@ private:
   /* Representation Type */
   int RepresentationType;
 
-  /* Constructors and destructors: */
+  virtual void toolCreationCallback(
+    Vrui::ToolManager::ToolCreationCallbackData* cbData);
+  virtual void toolDestructionCallback(
+    Vrui::ToolManager::ToolDestructionCallbackData* cbData);
+
+  BaseLocator* baseLocator;
+
 public:
+  /* Constructors and destructors: */
   VruiVTK(int& argc,char**& argv);
   virtual ~VruiVTK(void);
 

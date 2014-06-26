@@ -31,6 +31,8 @@
 
 // VruiVTK includes
 #include "VruiVTK.h"
+#include "BaseLocator.h"
+#include "ClippingPlaneLocator.h"
 
 //----------------------------------------------------------------------------
 VruiVTK::DataItem::DataItem(void)
@@ -57,7 +59,8 @@ VruiVTK::VruiVTK(int& argc,char**& argv)
   FileName(0),
   mainMenu(0),
   Opacity(1.0),
-  RepresentationType(2)
+  RepresentationType(2),
+  baseLocator(0)
 {
   /* Create the user interface: */
   mainMenu=createMainMenu();
@@ -274,4 +277,31 @@ void VruiVTK::reprDropdownBoxCallback(
   GLMotif::DropdownBox::ValueChangedCallbackData* cbData)
 {
   this->RepresentationType = cbData->newSelectedItem;
+}
+
+//----------------------------------------------------------------------------
+void VruiVTK::toolCreationCallback(
+  Vrui::ToolManager::ToolCreationCallbackData * callbackData)
+{
+  Vrui::LocatorTool* locatorTool = dynamic_cast<Vrui::LocatorTool*>
+    (callbackData->tool);
+  if(locatorTool != 0)
+    {
+    this->baseLocator = new ClippingPlaneLocator(locatorTool, this);
+    }
+}
+
+//----------------------------------------------------------------------------
+void VruiVTK::toolDestructionCallback(
+  Vrui::ToolManager::ToolDestructionCallbackData * callbackData)
+{
+  Vrui::LocatorTool* locatorTool = dynamic_cast<Vrui::LocatorTool*> (
+    callbackData->tool);
+  if(locatorTool != 0)
+    {
+    if(this->baseLocator)
+      {
+      delete this->baseLocator;
+      }
+    }
 }
