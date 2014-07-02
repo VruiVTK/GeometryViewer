@@ -1,6 +1,7 @@
 // STD includes
 #include <iostream>
 #include <string>
+#include <math.h>
 
 // OpenGL/Motif includes
 #include <GL/GLContextData.h>
@@ -61,21 +62,24 @@ VruiVTK::VruiVTK(int& argc,char**& argv)
   renderingDialog(NULL),
   Opacity(1.0),
   opacityValue(NULL),
-  RepresentationType(2)
+  RepresentationType(2),
+  FirstFrame(true)
 {
   /* Create the user interface: */
   renderingDialog = createRenderingDialog();
   mainMenu=createMainMenu();
   Vrui::setMainMenu(mainMenu);
 
-  /* Initialize Vrui navigation transformation: */
-  centerDisplayCallback(0);
+  this->DataBounds = new double[6];
 }
 
 //----------------------------------------------------------------------------
 VruiVTK::~VruiVTK(void)
 {
-
+  if(this->DataBounds)
+    {
+    delete[] this->DataBounds;
+    }
 }
 
 //----------------------------------------------------------------------------
@@ -171,6 +175,25 @@ GLMotif::PopupWindow* VruiVTK::createRenderingDialog(void) {
 //----------------------------------------------------------------------------
 void VruiVTK::frame(void)
 {
+  if(this->FirstFrame)
+    {
+    /* Compute the data center and Radius once */
+    this->Center[0] = (this->DataBounds[0] + this->DataBounds[1])/2.0;
+    this->Center[1] = (this->DataBounds[2] + this->DataBounds[3])/2.0;
+    this->Center[2] = (this->DataBounds[4] + this->DataBounds[5])/2.0;
+
+    this->Radius = sqrt((this->DataBounds[1] - this->DataBounds[0])*
+                        (this->DataBounds[1] - this->DataBounds[0]) +
+                        (this->DataBounds[3] - this->DataBounds[2])*
+                        (this->DataBounds[3] - this->DataBounds[2]) +
+                        (this->DataBounds[5] - this->DataBounds[4])*
+                        (this->DataBounds[5] - this->DataBounds[4]));
+    /* Scale the Radius */
+    this->Radius *= 0.75;
+    /* Initialize Vrui navigation transformation: */
+    centerDisplayCallback(0);
+    this->FirstFrame = false;
+    }
 }
 
 //----------------------------------------------------------------------------
@@ -182,16 +205,21 @@ void VruiVTK::initContext(GLContextData& contextData) const
 
   vtkNew<vtkPolyDataMapper> mapper;
   dataItem->actor->SetMapper(mapper.GetPointer());
+
   if(this->FileName)
     {
     vtkNew<vtkOBJReader> reader;
     reader->SetFileName(this->FileName);
-    mapper->SetInputConnection(reader->GetOutputPort());
+    reader->Update();
+    reader->GetOutput()->GetBounds(this->DataBounds);
+    mapper->SetInputData(reader->GetOutput());
     }
   else
     {
     vtkNew<vtkCubeSource> cube;
-    mapper->SetInputConnection(cube->GetOutputPort());
+    cube->Update();
+    cube->GetOutput()->GetBounds(this->DataBounds);
+    mapper->SetInputData(cube->GetOutput());
     }
 }
 
@@ -231,14 +259,12 @@ void VruiVTK::display(GLContextData& contextData) const
 //----------------------------------------------------------------------------
 void VruiVTK::centerDisplayCallback(Misc::CallbackData* callBackData)
 {
-  Vrui::NavTransform nav=Vrui::NavTransform::identity;
-  nav*=Vrui::NavTransform::translateFromOriginTo(
-    Vrui::getDisplayCenter());
-  nav*=Vrui::NavTransform::rotate(Vrui::Rotation::rotateFromTo(
-      Vrui::Vector(0,0,1),Vrui::getUpDirection()));
-  nav*=Vrui::NavTransform::scale(
-    Vrui::Scalar(8.0)*Vrui::getInchFactor()/Vrui::Scalar(1.0));
-  Vrui::setNavigationTransformation(nav);
+  if(!this->DataBounds)
+    {
+    std::cerr << "ERROR: Data bounds not set!!" << std::endl;
+    return;
+    }
+  Vrui::setNavigationTransformation(this->Center, this->Radius);
 }
 
 //----------------------------------------------------------------------------

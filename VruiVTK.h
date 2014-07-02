@@ -61,6 +61,18 @@ private:
   /* Representation Type */
   int RepresentationType;
 
+  /* bounds */
+  double* DataBounds;
+
+  /* First Frame */
+  bool FirstFrame;
+
+  /* Data Center */
+  Vrui::Point Center;
+
+  /* Data Radius  */
+  Vrui::Scalar Radius;
+
   /* Constructors and destructors: */
 public:
   VruiVTK(int& argc,char**& argv);
