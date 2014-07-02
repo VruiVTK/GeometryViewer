@@ -267,6 +267,22 @@ void VruiVTK::initContext(GLContextData& contextData) const
 //----------------------------------------------------------------------------
 void VruiVTK::display(GLContextData& contextData) const
 {
+    int numberOfSupportedClippingPlanes;
+    glGetIntegerv(GL_MAX_CLIP_PLANES, &numberOfSupportedClippingPlanes);
+    int clippingPlaneIndex = 0;
+    for (int i = 0; i < NumberOfClippingPlanes && clippingPlaneIndex < numberOfSupportedClippingPlanes; ++i) {
+        if (ClippingPlanes[i].isActive()) {
+            /* Enable the clipping plane: */
+            glEnable(GL_CLIP_PLANE0 + clippingPlaneIndex);
+            GLdouble clippingPlane[4];
+            for (int j = 0; j < 3; ++j)
+                clippingPlane[j] = ClippingPlanes[i].getPlane().getNormal()[j];
+            clippingPlane[3] = -ClippingPlanes[i].getPlane().getOffset();
+            glClipPlane(GL_CLIP_PLANE0 + clippingPlaneIndex, clippingPlane);
+            /* Go to the next clipping plane: */
+            ++clippingPlaneIndex;
+        }
+    }
   /* Save OpenGL state: */
   glPushAttrib(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_ENABLE_BIT|
     GL_LIGHTING_BIT|GL_POLYGON_BIT);
@@ -294,7 +310,18 @@ void VruiVTK::display(GLContextData& contextData) const
   dataItem->actor->GetProperty()->SetRepresentation(this->RepresentationType);
   /* Render the scene */
   dataItem->externalVTKWidget->GetRenderWindow()->Render();
+
   glPopAttrib();
+
+      clippingPlaneIndex = 0;
+    for (int i = 0; i < NumberOfClippingPlanes && clippingPlaneIndex < numberOfSupportedClippingPlanes; ++i) {
+        if (ClippingPlanes[i].isActive()) {
+            /* Disable the clipping plane: */
+            glDisable(GL_CLIP_PLANE0 + clippingPlaneIndex);
+            /* Go to the next clipping plane: */
+            ++clippingPlaneIndex;
+        }
+    }
 }
 
 //----------------------------------------------------------------------------
