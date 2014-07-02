@@ -9,6 +9,8 @@
 #include <GLMotif/Menu.h>
 #include <GLMotif/Popup.h>
 #include <GLMotif/PopupMenu.h>
+#include <GLMotif/RadioBox.h>
+#include <GLMotif/ToggleButton.h>
 #include <GLMotif/StyleSheet.h>
 #include <GLMotif/SubMenu.h>
 #include <GLMotif/WidgetManager.h>
@@ -55,11 +57,14 @@ VruiVTK::DataItem::~DataItem(void)
 VruiVTK::VruiVTK(int& argc,char**& argv)
   :Vrui::Application(argc,argv),
   FileName(0),
-  mainMenu(0),
+  mainMenu(NULL),
+  renderingDialog(NULL),
   Opacity(1.0),
+  opacityValue(NULL),
   RepresentationType(2)
 {
   /* Create the user interface: */
+  renderingDialog = createRenderingDialog();
   mainMenu=createMainMenu();
   Vrui::setMainMenu(mainMenu);
 
@@ -70,8 +75,7 @@ VruiVTK::VruiVTK(int& argc,char**& argv)
 //----------------------------------------------------------------------------
 VruiVTK::~VruiVTK(void)
 {
-  /* Delete the user interface: */
-  delete mainMenu;
+
 }
 
 //----------------------------------------------------------------------------
@@ -98,95 +102,70 @@ const char* VruiVTK::getFileName(void)
 //----------------------------------------------------------------------------
 GLMotif::PopupMenu* VruiVTK::createMainMenu(void)
 {
-  /* Create a top-level shell for the main menu: */
-  GLMotif::PopupMenu* mainMenuPopup =
-    new GLMotif::PopupMenu("MainMenuPopup",Vrui::getWidgetManager());
-  mainMenuPopup->setTitle("Interaction");
-
-  /* Create the actual menu inside the top-level shell: */
+  GLMotif::PopupMenu* mainMenuPopup = new GLMotif::PopupMenu("MainMenuPopup",Vrui::getWidgetManager());
+  mainMenuPopup->setTitle("Main Menu");
   GLMotif::Menu* mainMenu = new GLMotif::Menu("MainMenu",mainMenuPopup,false);
 
-  /* Create a cascade button to show the "Rendering Options" submenu */
-  GLMotif::CascadeButton* renderOptionsCascade = new GLMotif::CascadeButton(
-    "RenderOptionsCascade", mainMenu, "Rendering Options");
-  renderOptionsCascade->setPopup(createRenderOptionsMenu());
+  GLMotif::CascadeButton* representationCascade = new GLMotif::CascadeButton("RepresentationCascade", mainMenu,
+    "Representation");
+  representationCascade->setPopup(createRepresentationMenu());
 
-  /* Create a button to reset the navigation coordinates
-   * to the default (showing the entire Earth):
-   */
-  GLMotif::Button* centerDisplayButton =
-    new GLMotif::Button("CenterDisplayButton",mainMenu,"Center Display");
-  centerDisplayButton->getSelectCallbacks().add(
-    this,&VruiVTK::centerDisplayCallback);
+  GLMotif::Button* centerDisplayButton = new GLMotif::Button("CenterDisplayButton",mainMenu,"Center Display");
+  centerDisplayButton->getSelectCallbacks().add(this,&VruiVTK::centerDisplayCallback);
 
-  /* Calculate the main menu's proper layout: */
+  GLMotif::ToggleButton * showRenderingDialog = new GLMotif::ToggleButton("ShowRenderingDialog", mainMenu, "Rendering");
+  showRenderingDialog->setToggle(false);
+  showRenderingDialog->getValueChangedCallbacks().add(this, &VruiVTK::showRenderingDialogCallback);
+
   mainMenu->manageChild();
-
-  /* Return the created top-level shell: */
   return mainMenuPopup;
 }
 
 //----------------------------------------------------------------------------
-GLMotif::Popup* VruiVTK::createRenderOptionsMenu(void)
+GLMotif::Popup* VruiVTK::createRepresentationMenu(void)
 {
-  /* Get Vrui stylesheet to keep it consistent across GLMotif */
-  const GLMotif::StyleSheet* style =
-    Vrui::getWidgetManager()->getStyleSheet();
+  const GLMotif::StyleSheet* ss = Vrui::getWidgetManager()->getStyleSheet();
 
-  /* Create the submenu's top-level shell */
-  GLMotif::Popup* renderOptionsMenuPopup =
-    new GLMotif::Popup("RenderOptionsMenuPopup", Vrui::getWidgetManager());
+  GLMotif::Popup* representationMenuPopup = new GLMotif::Popup("representationMenuPopup", Vrui::getWidgetManager());
+  GLMotif::SubMenu* representationMenu = new GLMotif::SubMenu("representationMenu", representationMenuPopup, false);
 
-  /* Create the array of render options inside the top-level shell */
-  GLMotif::SubMenu* renderOptionsMenu =
-    new GLMotif::SubMenu("RenderOptionsMenu", renderOptionsMenuPopup, false);
+  GLMotif::RadioBox* representation_RadioBox = new GLMotif::RadioBox("Representation RadioBox",representationMenu,true);
 
-  /* Create the opacity sub-menu */
-  GLMotif::Popup* opacityPopup =
-    new GLMotif::Popup("OpacityPopup", Vrui::getWidgetManager());
-  GLMotif::SubMenu* opacityMenu =
-    new GLMotif::SubMenu("OpacityMenu", opacityPopup, false);
-  opacityMenu->manageChild();
+  GLMotif::ToggleButton* showSurface=new GLMotif::ToggleButton("ShowSurface",representation_RadioBox,"Surface");
+  showSurface->getValueChangedCallbacks().add(this,&VruiVTK::changeRepresentationCallback);
+  GLMotif::ToggleButton* showWireframe=new GLMotif::ToggleButton("ShowWireframe",representation_RadioBox,"Wireframe");
+  showWireframe->getValueChangedCallbacks().add(this,&VruiVTK::changeRepresentationCallback);
+  GLMotif::ToggleButton* showPoints=new GLMotif::ToggleButton("ShowPoints",representation_RadioBox,"Points");
+  showPoints->getValueChangedCallbacks().add(this,&VruiVTK::changeRepresentationCallback);
 
-  /* Create a cascade button to show the Opacity menu */
-  GLMotif::CascadeButton* opacityCascade = new GLMotif::CascadeButton(
-    "OpacityCascade", renderOptionsMenu, "Opacity");
-  opacityCascade->setPopup(opacityPopup);
+  representation_RadioBox->setSelectionMode(GLMotif::RadioBox::ALWAYS_ONE);
+  representation_RadioBox->setSelectedToggle(showSurface);
 
-  /* Create a slider that pops up from the opacity sub-menu */
-  GLMotif::Slider* opacitySlider = new GLMotif::Slider("OpacitySlider",
-    opacityMenu, GLMotif::Slider::HORIZONTAL, style->fontHeight*10.0f);
-  opacitySlider->setValue(1.0);
+  representationMenu->manageChild();
+  return representationMenuPopup;
+}
+
+//----------------------------------------------------------------------------
+GLMotif::PopupWindow* VruiVTK::createRenderingDialog(void) {
+  const GLMotif::StyleSheet& ss = *Vrui::getWidgetManager()->getStyleSheet();
+  GLMotif::PopupWindow * dialogPopup = new GLMotif::PopupWindow("RenderingDialogPopup", Vrui::getWidgetManager(),
+    "Rendering Dialog");
+  GLMotif::RowColumn * dialog = new GLMotif::RowColumn("RenderingDialog", dialogPopup, false);
+  dialog->setOrientation(GLMotif::RowColumn::HORIZONTAL);
+
+  /* Create opacity slider */
+  GLMotif::Slider* opacitySlider = new GLMotif::Slider("OpacitySlider", dialog, GLMotif::Slider::HORIZONTAL,
+    ss.fontHeight*10.0f);
+  opacitySlider->setValue(Opacity);
   opacitySlider->setValueRange(0.0, 1.0, 0.1);
   opacitySlider->getValueChangedCallbacks().add(this, &VruiVTK::opacitySliderCallback);
+  opacityValue = new GLMotif::TextField("OpacityValue", dialog, 6);
+  opacityValue->setFieldWidth(6);
+  opacityValue->setPrecision(3);
+  opacityValue->setValue(Opacity);
 
-  /* Create the representation sub-menu */
-  GLMotif::Popup* reprPopup =
-    new GLMotif::Popup("ReprPopup", Vrui::getWidgetManager());
-  GLMotif::SubMenu* reprMenu =
-    new GLMotif::SubMenu("ReprMenu", reprPopup, false);
-  reprMenu->manageChild();
-
-  /* Create a cascade button to show the Opacity menu */
-  GLMotif::CascadeButton* reprCascade = new GLMotif::CascadeButton(
-    "ReprCascade", renderOptionsMenu, "Representation");
-  reprCascade->setPopup(reprPopup);
-
-  /* Create a DropdownBox that pops up from the repr sub-menu */
-  std::vector<std::string> items;
-  items.push_back(std::string("Points"));
-  items.push_back(std::string("Wireframe"));
-  items.push_back(std::string("Surface"));
-  GLMotif::DropdownBox* reprBox =
-    new GLMotif::DropdownBox("Representation", reprMenu, items);
-  reprBox->setSelectedItem(2);
-  reprBox->getValueChangedCallbacks().add(this, &VruiVTK::reprDropdownBoxCallback);
-
-  /* Calculate the submenu's proper layout */
-  renderOptionsMenu->manageChild();
-
-  /* Return the created top-level shell */
-  return renderOptionsMenuPopup;
+  dialog->manageChild();
+  return dialogPopup;
 }
 
 //----------------------------------------------------------------------------
@@ -250,7 +229,7 @@ void VruiVTK::display(GLContextData& contextData) const
 }
 
 //----------------------------------------------------------------------------
-void VruiVTK::centerDisplayCallback(Misc::CallbackData* cbData)
+void VruiVTK::centerDisplayCallback(Misc::CallbackData* callBackData)
 {
   Vrui::NavTransform nav=Vrui::NavTransform::identity;
   nav*=Vrui::NavTransform::translateFromOriginTo(
@@ -258,20 +237,47 @@ void VruiVTK::centerDisplayCallback(Misc::CallbackData* cbData)
   nav*=Vrui::NavTransform::rotate(Vrui::Rotation::rotateFromTo(
       Vrui::Vector(0,0,1),Vrui::getUpDirection()));
   nav*=Vrui::NavTransform::scale(
-    Vrui::Scalar(8)*Vrui::getInchFactor()/Vrui::Scalar(16.0));
+    Vrui::Scalar(8.0)*Vrui::getInchFactor()/Vrui::Scalar(1.0));
   Vrui::setNavigationTransformation(nav);
 }
 
 //----------------------------------------------------------------------------
 void VruiVTK::opacitySliderCallback(
-  GLMotif::Slider::ValueChangedCallbackData* cbData)
+  GLMotif::Slider::ValueChangedCallbackData* callBackData)
 {
-  this->Opacity = static_cast<double>(cbData->value);
+  this->Opacity = static_cast<double>(callBackData->value);
+  opacityValue->setValue(callBackData->value);
 }
 
 //----------------------------------------------------------------------------
-void VruiVTK::reprDropdownBoxCallback(
-  GLMotif::DropdownBox::ValueChangedCallbackData* cbData)
+void VruiVTK::changeRepresentationCallback(GLMotif::ToggleButton::ValueChangedCallbackData* callBackData)
 {
-  this->RepresentationType = cbData->newSelectedItem;
+    /* Adjust representation state based on which toggle button changed state: */
+    if (strcmp(callBackData->toggle->getName(), "ShowSurface") == 0)
+    {
+      this->RepresentationType = 2;
+    }
+    else if (strcmp(callBackData->toggle->getName(), "ShowWireframe") == 0)
+    {
+      this->RepresentationType = 1;
+    }
+    else if (strcmp(callBackData->toggle->getName(), "ShowPoints") == 0)
+    {
+      this->RepresentationType = 0;
+    }
+}
+
+//----------------------------------------------------------------------------
+void VruiVTK::showRenderingDialogCallback(GLMotif::ToggleButton::ValueChangedCallbackData* callBackData)
+{
+    /* open/close rendering dialog based on which toggle button changed state: */
+  if (strcmp(callBackData->toggle->getName(), "ShowRenderingDialog") == 0) {
+    if (callBackData->set) {
+      /* Open the rendering dialog at the same position as the main menu: */
+      Vrui::getWidgetManager()->popupPrimaryWidget(renderingDialog, Vrui::getWidgetManager()->calcWidgetTransformation(mainMenu));
+    } else {
+      /* Close the rendering dialog: */
+      Vrui::popdownPrimaryWidget(renderingDialog);
+    }
+  }
 }

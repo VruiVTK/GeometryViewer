@@ -3,11 +3,13 @@
 
 // OpenGL/Motif includes
 #include <GL/gl.h>
-#include <GL/GLObject.h>
-#include <GLMotif/Slider.h>
-#include <GLMotif/DropdownBox.h>
 
 // Vrui includes
+#include <GL/GLObject.h>
+#include <GLMotif/PopupWindow.h>
+#include <GLMotif/Slider.h>
+#include <GLMotif/TextField.h>
+#include <GLMotif/ToggleButton.h>
 #include <Vrui/Application.h>
 
 // VTK includes
@@ -44,9 +46,11 @@ private:
 
   /* Elements: */
   GLMotif::PopupMenu* mainMenu; // The program's main menu
-
-  /* Private methods: */
-  GLMotif::PopupMenu* createMainMenu(void); // Creates the program's main menu
+  GLMotif::PopupMenu* createMainMenu(void);
+  GLMotif::Popup* createRepresentationMenu(void);
+  GLMotif::PopupWindow* renderingDialog;
+  GLMotif::PopupWindow* createRenderingDialog(void);
+  GLMotif::TextField* opacityValue;
 
   /* Name of file to load */
   char* FileName;
@@ -74,10 +78,9 @@ public:
   /* Callback methods */
   void centerDisplayCallback(Misc::CallbackData* cbData);
   void opacitySliderCallback(GLMotif::Slider::ValueChangedCallbackData* cbData);
-  void reprDropdownBoxCallback(GLMotif::DropdownBox::ValueChangedCallbackData* cbData);
+  void changeRepresentationCallback(GLMotif::ToggleButton::ValueChangedCallbackData* callBackData);
+  void showRenderingDialogCallback(GLMotif::ToggleButton::ValueChangedCallbackData* callBackData);
 
-  /* Methods to create widgets */
-  GLMotif::Popup* createRenderOptionsMenu(void);
 };
 
 #endif //_VRUIVTK_H
