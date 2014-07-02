@@ -33,6 +33,9 @@
 #include <vtkProperty.h>
 
 // VruiVTK includes
+#include "BaseLocator.h"
+#include "ClippingPlane.h"
+#include "ClippingPlaneLocator.h"
 #include "VruiVTK.h"
 
 //----------------------------------------------------------------------------
@@ -63,7 +66,9 @@ VruiVTK::VruiVTK(int& argc,char**& argv)
   Opacity(1.0),
   opacityValue(NULL),
   RepresentationType(2),
-  FirstFrame(true)
+  FirstFrame(true),
+  ClippingPlanes(NULL),
+  NumberOfClippingPlanes(6)
 {
   /* Create the user interface: */
   renderingDialog = createRenderingDialog();
@@ -71,6 +76,14 @@ VruiVTK::VruiVTK(int& argc,char**& argv)
   Vrui::setMainMenu(mainMenu);
 
   this->DataBounds = new double[6];
+
+  /* Initialize the clipping planes */
+  ClippingPlanes = new ClippingPlane[NumberOfClippingPlanes];
+  for(int i = 0; i < NumberOfClippingPlanes; ++i)
+    {
+    ClippingPlanes[i].setAllocated(false);
+    ClippingPlanes[i].setActive(false);
+    }
 }
 
 //----------------------------------------------------------------------------
@@ -306,4 +319,16 @@ void VruiVTK::showRenderingDialogCallback(GLMotif::ToggleButton::ValueChangedCal
       Vrui::popdownPrimaryWidget(renderingDialog);
     }
   }
+}
+
+//----------------------------------------------------------------------------
+ClippingPlane * VruiVTK::getClippingPlanes(void)
+{
+  return this->ClippingPlanes;
+}
+
+//----------------------------------------------------------------------------
+int VruiVTK::getNumberOfClippingPlanes(void)
+{
+    return this->NumberOfClippingPlanes;
 }

@@ -23,6 +23,7 @@ namespace GLMotif
 }
 
 class vtkActor;
+class ClippingPlane;
 class ExternalVTKWidget;
 class vtkLight;
 
@@ -73,6 +74,10 @@ private:
   /* Data Radius  */
   Vrui::Scalar Radius;
 
+  /* Clipping Plane */
+  ClippingPlane * ClippingPlanes;
+  int NumberOfClippingPlanes;
+
   /* Constructors and destructors: */
 public:
   VruiVTK(int& argc,char**& argv);
@@ -81,6 +86,10 @@ public:
   /* Methods to set/get the filename to read */
   void setFileName(const char* name);
   const char* getFileName(void);
+
+  /* Clipping Planes */
+  ClippingPlane * getClippingPlanes(void);
+  int getNumberOfClippingPlanes(void);
 
   /* Methods to manage render context */
   virtual void initContext(GLContextData& contextData) const;

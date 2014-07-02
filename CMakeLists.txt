@@ -27,6 +27,12 @@ FIND_PACKAGE(VTK REQUIRED)
 INCLUDE(${VTK_USE_FILE})
 
 SET(${PROJECT_NAME}_SRCS
+  BaseLocator.cpp
+  BaseLocator.h
+  ClippingPlane.cpp
+  ClippingPlane.h
+  ClippingPlaneLocator.cpp
+  ClippingPlaneLocator.h
   main.cpp
   VruiVTK.cpp
   VruiVTK.h
