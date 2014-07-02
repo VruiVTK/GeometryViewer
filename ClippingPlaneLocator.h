@@ -1,10 +1,3 @@
-/*
- * ClippingPlaneLocator.cpp - Class
- *
- * Author: Patrick O'Leary
- * Created: May 27, 2008
- * Copyright: 2008. All rights reserved.
- */
 #ifndef CLIPPINGPLANELOCATOR_H_
 #define CLIPPINGPLANELOCATOR_H_
 

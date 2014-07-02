@@ -67,6 +67,7 @@ VruiVTK::VruiVTK(int& argc,char**& argv)
   opacityValue(NULL),
   RepresentationType(2),
   FirstFrame(true),
+  analysisTool(0),
   ClippingPlanes(NULL),
   NumberOfClippingPlanes(6)
 {
@@ -127,10 +128,15 @@ GLMotif::PopupMenu* VruiVTK::createMainMenu(void)
     "Representation");
   representationCascade->setPopup(createRepresentationMenu());
 
+  GLMotif::CascadeButton* analysisToolsCascade = new GLMotif::CascadeButton("AnalysisToolsCascade", mainMenu,
+    "Analysis Tools");
+  analysisToolsCascade->setPopup(createAnalysisToolsMenu());
+
   GLMotif::Button* centerDisplayButton = new GLMotif::Button("CenterDisplayButton",mainMenu,"Center Display");
   centerDisplayButton->getSelectCallbacks().add(this,&VruiVTK::centerDisplayCallback);
 
-  GLMotif::ToggleButton * showRenderingDialog = new GLMotif::ToggleButton("ShowRenderingDialog", mainMenu, "Rendering");
+  GLMotif::ToggleButton * showRenderingDialog = new GLMotif::ToggleButton("ShowRenderingDialog", mainMenu,
+    "Rendering");
   showRenderingDialog->setToggle(false);
   showRenderingDialog->getValueChangedCallbacks().add(this, &VruiVTK::showRenderingDialogCallback);
 
@@ -160,6 +166,28 @@ GLMotif::Popup* VruiVTK::createRepresentationMenu(void)
 
   representationMenu->manageChild();
   return representationMenuPopup;
+}
+
+//----------------------------------------------------------------------------
+GLMotif::Popup * VruiVTK::createAnalysisToolsMenu(void)
+{
+  const GLMotif::StyleSheet* ss = Vrui::getWidgetManager()->getStyleSheet();
+
+  GLMotif::Popup * analysisToolsMenuPopup = new GLMotif::Popup("analysisToolsMenuPopup", Vrui::getWidgetManager());
+  GLMotif::SubMenu* analysisToolsMenu = new GLMotif::SubMenu("representationMenu", analysisToolsMenuPopup, false);
+
+  GLMotif::RadioBox * analysisTools_RadioBox = new GLMotif::RadioBox("analysisTools", analysisToolsMenu, true);
+
+  GLMotif::ToggleButton* showClippingPlane=new GLMotif::ToggleButton("ClippingPlane",analysisTools_RadioBox,"Clipping Plane");
+  showClippingPlane->getValueChangedCallbacks().add(this,&VruiVTK::changeAnalysisToolsCallback);
+  GLMotif::ToggleButton* showOther=new GLMotif::ToggleButton("Other",analysisTools_RadioBox,"Other");
+  showOther->getValueChangedCallbacks().add(this,&VruiVTK::changeAnalysisToolsCallback);
+
+  analysisTools_RadioBox->setSelectionMode(GLMotif::RadioBox::ALWAYS_ONE);
+  analysisTools_RadioBox->setSelectedToggle(showClippingPlane);
+
+  analysisToolsMenu->manageChild();
+  return analysisToolsMenuPopup;
 }
 
 //----------------------------------------------------------------------------
@@ -305,6 +333,19 @@ void VruiVTK::changeRepresentationCallback(GLMotif::ToggleButton::ValueChangedCa
       this->RepresentationType = 0;
     }
 }
+//----------------------------------------------------------------------------
+void VruiVTK::changeAnalysisToolsCallback(GLMotif::ToggleButton::ValueChangedCallbackData* callBackData)
+{
+    /* Set the new analysis tool: */
+    if (strcmp(callBackData->toggle->getName(), "ClippingPlane") == 0)
+    {
+      this->analysisTool = 0;
+    }
+    else if (strcmp(callBackData->toggle->getName(), "Other") == 0)
+    {
+      this->analysisTool = 1;
+    }
+}
 
 //----------------------------------------------------------------------------
 void VruiVTK::showRenderingDialogCallback(GLMotif::ToggleButton::ValueChangedCallbackData* callBackData)
@@ -331,4 +372,38 @@ ClippingPlane * VruiVTK::getClippingPlanes(void)
 int VruiVTK::getNumberOfClippingPlanes(void)
 {
     return this->NumberOfClippingPlanes;
+}
+
+//----------------------------------------------------------------------------
+void VruiVTK::toolCreationCallback(Vrui::ToolManager::ToolCreationCallbackData * callbackData) {
+    /* Check if the new tool is a locator tool: */
+    Vrui::LocatorTool* locatorTool = dynamic_cast<Vrui::LocatorTool*> (callbackData->tool);
+    if (locatorTool != 0) {
+        BaseLocator* newLocator;
+        if (analysisTool == 0) {
+            /* Create a clipping plane locator object and associate it with the new tool: */
+            newLocator = new ClippingPlaneLocator(locatorTool, this);
+        }
+
+        /* Add new locator to list: */
+        baseLocators.push_back(newLocator);
+    }
+}
+
+//----------------------------------------------------------------------------
+void VruiVTK::toolDestructionCallback(Vrui::ToolManager::ToolDestructionCallbackData * callbackData) {
+    /* Check if the to-be-destroyed tool is a locator tool: */
+    Vrui::LocatorTool* locatorTool = dynamic_cast<Vrui::LocatorTool*> (callbackData->tool);
+    if (locatorTool != 0) {
+        /* Find the data locator associated with the tool in the list: */
+        for (BaseLocatorList::iterator blIt = baseLocators.begin(); blIt != baseLocators.end(); ++blIt) {
+
+            if ((*blIt)->getTool() == locatorTool) {
+                /* Remove the locator: */
+                delete *blIt;
+                baseLocators.erase(blIt);
+                break;
+            }
+        }
+    }
 }

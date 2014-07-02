@@ -1,12 +1,3 @@
-/*
- * BaseLocator.cpp - Methods for BaseLocator class.
- * 
- * Author: Patrick O'Leary
- * Created: February 8, 2008
- * Copyright 2008. All rights reserved.
- */
-
-/* Vrui includes */
 #include <Vrui/LocatorTool.h>
 
 #include "BaseLocator.h"
@@ -14,7 +5,7 @@
 
 /*
  * BaseLocator
- * 
+ *
  * parameter _locatorTool - Vrui::LocatorTool*
  * parameter _application - VruiVTK*
  */
@@ -32,7 +23,7 @@ BaseLocator::~BaseLocator(void) {
 
 /*
  * highlightLocator - Render actual locator
- * 
+ *
  * parameter glContextData - GLContextData&
  */
 void BaseLocator::highlightLocator(GLContextData& glContextData) const {
@@ -40,7 +31,7 @@ void BaseLocator::highlightLocator(GLContextData& glContextData) const {
 
 /*
  * glRenderAction - Render opaque elements of locator
- * 
+ *
  * parameter glContextData - GLContextData&
  */
 void BaseLocator::glRenderAction(GLContextData& glContextData) const {
@@ -48,7 +39,7 @@ void BaseLocator::glRenderAction(GLContextData& glContextData) const {
 
 /*
  * glRenderActionTransparent - Render transparent elements of locator
- * 
+ *
  * parameter glContextData - GLContextData&
  */
 void BaseLocator::glRenderActionTransparent(GLContextData& glContextData) const {

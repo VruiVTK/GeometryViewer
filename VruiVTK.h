@@ -23,6 +23,7 @@ namespace GLMotif
 }
 
 class vtkActor;
+class BaseLocator;
 class ClippingPlane;
 class ExternalVTKWidget;
 class vtkLight;
@@ -30,6 +31,7 @@ class vtkLight;
 class VruiVTK:public Vrui::Application,public GLObject
 {
 /* Embedded classes: */
+  typedef std::vector<BaseLocator*> BaseLocatorList;
 private:
   struct DataItem : public GLObject::DataItem
   {
@@ -49,6 +51,7 @@ private:
   GLMotif::PopupMenu* mainMenu; // The program's main menu
   GLMotif::PopupMenu* createMainMenu(void);
   GLMotif::Popup* createRepresentationMenu(void);
+  GLMotif::Popup* createAnalysisToolsMenu(void);
   GLMotif::PopupWindow* renderingDialog;
   GLMotif::PopupWindow* createRenderingDialog(void);
   GLMotif::TextField* opacityValue;
@@ -73,6 +76,11 @@ private:
 
   /* Data Radius  */
   Vrui::Scalar Radius;
+
+  BaseLocatorList baseLocators;
+
+  /* Analysis Tools */
+  int analysisTool;
 
   /* Clipping Plane */
   ClippingPlane * ClippingPlanes;
@@ -101,7 +109,10 @@ public:
   void opacitySliderCallback(GLMotif::Slider::ValueChangedCallbackData* cbData);
   void changeRepresentationCallback(GLMotif::ToggleButton::ValueChangedCallbackData* callBackData);
   void showRenderingDialogCallback(GLMotif::ToggleButton::ValueChangedCallbackData* callBackData);
+  void changeAnalysisToolsCallback(GLMotif::ToggleButton::ValueChangedCallbackData* callBackData);
 
+  virtual void toolCreationCallback(Vrui::ToolManager::ToolCreationCallbackData* cbData);
+  virtual void toolDestructionCallback(Vrui::ToolManager::ToolDestructionCallbackData* cbData);
 };
 
 #endif //_VRUIVTK_H

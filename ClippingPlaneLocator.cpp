@@ -1,10 +1,3 @@
-/*
- * ClippingPlaneLocator.cpp - Methods for the ClippingPlaneLocator class
- *
- * Author: Patrick O'Leary
- * Created: May 27, 2008
- * Copyright: 2008. All rights reserved.
- */
 #include <iostream>
 
 /* Vrui includes */
@@ -89,4 +82,3 @@ void ClippingPlaneLocator::buttonReleaseCallback(
 	if (clippingPlane!=0)
 		clippingPlane->setActive(false);
 } // end buttonReleaseCallback()
-

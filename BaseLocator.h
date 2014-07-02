@@ -1,10 +1,3 @@
-/*
- * BaseLocator
- *
- * Author: Patrick O'Leary
- * Created: February 8, 2008
- * Copyright 2008. All rights reserved.
- */
 #ifndef BASELOCATOR_H_
 #define BASELOCATOR_H_
 

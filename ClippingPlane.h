@@ -1,11 +1,3 @@
-/*
- * ClippingPlane.h - Class for ...
- *
- * Author: Patrick O'Leary
- * Created: May 27, 2008
- * Copyright: 2008. All rights reserved.
- */
-
 #ifndef CLIPPINGPLANE_H_
 #define CLIPPINGPLANE_H_
 

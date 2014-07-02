@@ -1,11 +1,3 @@
-/*
- * ClippingPlane.cpp - Methods for the ClippingPlane class
- *
- * Author: Patrick O'Leary
- * Created: May 27, 2008
- * Copyright: 2008. All rights reserved.
- */
-
 #include "ClippingPlane.h"
 
 /*
