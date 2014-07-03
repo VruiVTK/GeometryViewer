@@ -86,6 +86,11 @@ private:
   ClippingPlane * ClippingPlanes;
   int NumberOfClippingPlanes;
 
+  /* Flashlight position and direction */
+  int * FlashlightSwitch;
+  double * FlashlightPosition;
+  double * FlashlightDirection;
+
   /* Constructors and destructors: */
 public:
   VruiVTK(int& argc,char**& argv);
@@ -98,6 +103,11 @@ public:
   /* Clipping Planes */
   ClippingPlane * getClippingPlanes(void);
   int getNumberOfClippingPlanes(void);
+
+  /* Get Flashlight position and direction */
+  int * getFlashlightSwitch(void);
+  double * getFlashlightPosition(void);
+  double * getFlashlightDirection(void);
 
   /* Methods to manage render context */
   virtual void initContext(GLContextData& contextData) const;

@@ -36,6 +36,7 @@
 #include "BaseLocator.h"
 #include "ClippingPlane.h"
 #include "ClippingPlaneLocator.h"
+#include "FlashlightLocator.h"
 #include "VruiVTK.h"
 
 //----------------------------------------------------------------------------
@@ -49,6 +50,8 @@ VruiVTK::DataItem::DataItem(void)
   this->flashlight->SwitchOff();
   this->flashlight->SetLightTypeToHeadlight();
   this->flashlight->SetColor(0.0, 1.0, 1.0);
+  this->flashlight->SetConeAngle(10);
+  this->flashlight->SetPositional(true);
   this->externalVTKWidget->GetRenderer()->AddLight(this->flashlight);
 }
 
@@ -69,7 +72,10 @@ VruiVTK::VruiVTK(int& argc,char**& argv)
   FirstFrame(true),
   analysisTool(0),
   ClippingPlanes(NULL),
-  NumberOfClippingPlanes(6)
+  NumberOfClippingPlanes(6),
+  FlashlightSwitch(0),
+  FlashlightPosition(0),
+  FlashlightDirection(0)
 {
   /* Create the user interface: */
   renderingDialog = createRenderingDialog();
@@ -77,6 +83,10 @@ VruiVTK::VruiVTK(int& argc,char**& argv)
   Vrui::setMainMenu(mainMenu);
 
   this->DataBounds = new double[6];
+  this->FlashlightSwitch = new int[1];
+  this->FlashlightSwitch[0] = 0;
+  this->FlashlightPosition = new double[3];
+  this->FlashlightDirection = new double[3];
 
   /* Initialize the clipping planes */
   ClippingPlanes = new ClippingPlane[NumberOfClippingPlanes];
@@ -93,6 +103,14 @@ VruiVTK::~VruiVTK(void)
   if(this->DataBounds)
     {
     delete[] this->DataBounds;
+    }
+  if(this->FlashlightPosition)
+    {
+    delete[] this->FlashlightPosition;
+    }
+  if(this->FlashlightDirection)
+    {
+    delete[] this->FlashlightDirection;
     }
 }
 
@@ -180,8 +198,8 @@ GLMotif::Popup * VruiVTK::createAnalysisToolsMenu(void)
 
   GLMotif::ToggleButton* showClippingPlane=new GLMotif::ToggleButton("ClippingPlane",analysisTools_RadioBox,"Clipping Plane");
   showClippingPlane->getValueChangedCallbacks().add(this,&VruiVTK::changeAnalysisToolsCallback);
-  GLMotif::ToggleButton* showOther=new GLMotif::ToggleButton("Other",analysisTools_RadioBox,"Other");
-  showOther->getValueChangedCallbacks().add(this,&VruiVTK::changeAnalysisToolsCallback);
+  GLMotif::ToggleButton* showFlashlight=new GLMotif::ToggleButton("Flashlight",analysisTools_RadioBox,"Flashlight");
+  showFlashlight->getValueChangedCallbacks().add(this,&VruiVTK::changeAnalysisToolsCallback);
 
   analysisTools_RadioBox->setSelectionMode(GLMotif::RadioBox::ALWAYS_ONE);
   analysisTools_RadioBox->setSelectedToggle(showClippingPlane);
@@ -289,18 +307,13 @@ void VruiVTK::display(GLContextData& contextData) const
   /* Get context data item */
   DataItem* dataItem = contextData.retrieveDataItem<DataItem>(this);
 
-  Vrui::ToolManager* toolManager = Vrui::getToolManager();
-  std::vector<Vrui::Tool*>::const_iterator toolListIter =
-    toolManager->beginTools();
-  for(; toolListIter != toolManager->endTools(); ++toolListIter)
+  if(this->FlashlightSwitch[0])
     {
-    if(std::string((*toolListIter)->getName()).compare("Flashlight") == 0)
-      {
-      dataItem->flashlight->SwitchOn();
-      break;
-      }
+    dataItem->flashlight->SetPosition(this->FlashlightPosition);
+    dataItem->flashlight->SetFocalPoint(this->FlashlightDirection);
+    dataItem->flashlight->SwitchOn();
     }
-  if(toolListIter == toolManager->endTools())
+  else
     {
     dataItem->flashlight->SwitchOff();
     }
@@ -368,7 +381,7 @@ void VruiVTK::changeAnalysisToolsCallback(GLMotif::ToggleButton::ValueChangedCal
     {
       this->analysisTool = 0;
     }
-    else if (strcmp(callBackData->toggle->getName(), "Other") == 0)
+    else if (strcmp(callBackData->toggle->getName(), "Flashlight") == 0)
     {
       this->analysisTool = 1;
     }
@@ -411,6 +424,10 @@ void VruiVTK::toolCreationCallback(Vrui::ToolManager::ToolCreationCallbackData *
             /* Create a clipping plane locator object and associate it with the new tool: */
             newLocator = new ClippingPlaneLocator(locatorTool, this);
         }
+        else if (analysisTool == 1) {
+          /* Create a flashlight locator object and associate it with the new tool: */
+          newLocator = new FlashlightLocator(locatorTool, this);
+        }
 
         /* Add new locator to list: */
         baseLocators.push_back(newLocator);
@@ -433,4 +450,22 @@ void VruiVTK::toolDestructionCallback(Vrui::ToolManager::ToolDestructionCallback
             }
         }
     }
+}
+
+//----------------------------------------------------------------------------
+int * VruiVTK::getFlashlightSwitch(void)
+{
+  return this->FlashlightSwitch;
+}
+
+//----------------------------------------------------------------------------
+double * VruiVTK::getFlashlightPosition(void)
+{
+  return this->FlashlightPosition;
+}
+
+//----------------------------------------------------------------------------
+double * VruiVTK::getFlashlightDirection(void)
+{
+  return this->FlashlightDirection;
 }
