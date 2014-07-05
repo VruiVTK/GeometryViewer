@@ -104,6 +104,10 @@ VruiVTK::~VruiVTK(void)
     {
     delete[] this->DataBounds;
     }
+  if(this->FlashlightSwitch)
+    {
+    delete[] this->FlashlightSwitch;
+    }
   if(this->FlashlightPosition)
     {
     delete[] this->FlashlightPosition;
@@ -174,12 +178,14 @@ GLMotif::Popup* VruiVTK::createRepresentationMenu(void)
 
   GLMotif::ToggleButton* showSurface=new GLMotif::ToggleButton("ShowSurface",representation_RadioBox,"Surface");
   showSurface->getValueChangedCallbacks().add(this,&VruiVTK::changeRepresentationCallback);
+  GLMotif::ToggleButton* showSurfaceWEdges=new GLMotif::ToggleButton("ShowSurfaceWEdges",representation_RadioBox,"Surface With Edges");
+  showSurfaceWEdges->getValueChangedCallbacks().add(this,&VruiVTK::changeRepresentationCallback);
   GLMotif::ToggleButton* showWireframe=new GLMotif::ToggleButton("ShowWireframe",representation_RadioBox,"Wireframe");
   showWireframe->getValueChangedCallbacks().add(this,&VruiVTK::changeRepresentationCallback);
   GLMotif::ToggleButton* showPoints=new GLMotif::ToggleButton("ShowPoints",representation_RadioBox,"Points");
   showPoints->getValueChangedCallbacks().add(this,&VruiVTK::changeRepresentationCallback);
 
-  representation_RadioBox->setSelectionMode(GLMotif::RadioBox::ALWAYS_ONE);
+  representation_RadioBox->setSelectionMode(GLMotif::RadioBox::ATMOST_ONE);
   representation_RadioBox->setSelectedToggle(showSurface);
 
   representationMenu->manageChild();
@@ -320,7 +326,16 @@ void VruiVTK::display(GLContextData& contextData) const
 
   /* Set actor opacity */
   dataItem->actor->GetProperty()->SetOpacity(this->Opacity);
-  dataItem->actor->GetProperty()->SetRepresentation(this->RepresentationType);
+  if(this->RepresentationType < 3)
+    {
+    dataItem->actor->GetProperty()->SetRepresentation(this->RepresentationType);
+    dataItem->actor->GetProperty()->EdgeVisibilityOff();
+    }
+  else if(this->RepresentationType == 3)
+    {
+    dataItem->actor->GetProperty()->SetRepresentationToSurface();
+    dataItem->actor->GetProperty()->EdgeVisibilityOn();
+    }
   /* Render the scene */
   dataItem->externalVTKWidget->GetRenderWindow()->Render();
 
@@ -371,6 +386,10 @@ void VruiVTK::changeRepresentationCallback(GLMotif::ToggleButton::ValueChangedCa
     else if (strcmp(callBackData->toggle->getName(), "ShowPoints") == 0)
     {
       this->RepresentationType = 0;
+    }
+    else if (strcmp(callBackData->toggle->getName(), "ShowSurfaceWEdges") == 0)
+    {
+      this->RepresentationType = 3;
     }
 }
 //----------------------------------------------------------------------------
