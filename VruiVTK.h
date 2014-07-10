@@ -22,11 +22,12 @@ namespace GLMotif
   class PopupMenu;
 }
 
-class vtkActor;
 class BaseLocator;
 class ClippingPlane;
 class ExternalVTKWidget;
+class vtkActor;
 class vtkLight;
+class vtkPolyDataMapper;
 
 class VruiVTK:public Vrui::Application,public GLObject
 {
@@ -41,6 +42,8 @@ private:
     vtkSmartPointer<ExternalVTKWidget> externalVTKWidget;
     vtkSmartPointer<vtkActor> actor;
     vtkSmartPointer<vtkLight> flashlight;
+    vtkSmartPointer<vtkPolyDataMapper> leftMapper;
+    vtkSmartPointer<vtkPolyDataMapper> rightMapper;
 
     /* Constructor and destructor*/
     DataItem(void);

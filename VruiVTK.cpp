@@ -31,6 +31,7 @@
 #include <vtkOBJReader.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
+#include <vtkSphereSource.h>
 
 // VruiVTK includes
 #include "BaseLocator.h"
@@ -53,6 +54,8 @@ VruiVTK::DataItem::DataItem(void)
   this->flashlight->SetConeAngle(10);
   this->flashlight->SetPositional(true);
   this->externalVTKWidget->GetRenderer()->AddLight(this->flashlight);
+  this->leftMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+  this->rightMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
 }
 
 //----------------------------------------------------------------------------
@@ -268,23 +271,23 @@ void VruiVTK::initContext(GLContextData& contextData) const
   DataItem* dataItem = new DataItem();
   contextData.addDataItem(this, dataItem);
 
-  vtkNew<vtkPolyDataMapper> mapper;
-  dataItem->actor->SetMapper(mapper.GetPointer());
-
   if(this->FileName)
     {
     vtkNew<vtkOBJReader> reader;
     reader->SetFileName(this->FileName);
     reader->Update();
     reader->GetOutput()->GetBounds(this->DataBounds);
-    mapper->SetInputData(reader->GetOutput());
+  //  mapper->SetInputData(reader->GetOutput());
     }
   else
     {
     vtkNew<vtkCubeSource> cube;
     cube->Update();
     cube->GetOutput()->GetBounds(this->DataBounds);
-    mapper->SetInputData(cube->GetOutput());
+    dataItem->leftMapper->SetInputData(cube->GetOutput());
+    vtkNew<vtkSphereSource> sphere;
+    sphere->Update();
+    dataItem->rightMapper->SetInputData(sphere->GetOutput());
     }
 }
 
@@ -312,6 +315,20 @@ void VruiVTK::display(GLContextData& contextData) const
     GL_LIGHTING_BIT|GL_POLYGON_BIT);
   /* Get context data item */
   DataItem* dataItem = contextData.retrieveDataItem<DataItem>(this);
+
+  GLint bufferType;
+  glGetIntegerv(GL_DRAW_BUFFER, &bufferType);
+  if (bufferType == GL_BACK_RIGHT || bufferType == GL_RIGHT
+    || bufferType == GL_FRONT_RIGHT)
+    {
+    // RIGHT buffer
+    dataItem->actor->SetMapper(dataItem->rightMapper);
+    }
+  else
+    {
+    // LEFT buffer
+    dataItem->actor->SetMapper(dataItem->leftMapper);
+    }
 
   if(this->FlashlightSwitch[0])
     {
