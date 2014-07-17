@@ -307,9 +307,7 @@ void VruiVTK::display(GLContextData& contextData) const
             ++clippingPlaneIndex;
         }
     }
-  /* Save OpenGL state: */
-  glPushAttrib(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_ENABLE_BIT|
-    GL_LIGHTING_BIT|GL_POLYGON_BIT);
+
   /* Get context data item */
   DataItem* dataItem = contextData.retrieveDataItem<DataItem>(this);
 
@@ -338,8 +336,6 @@ void VruiVTK::display(GLContextData& contextData) const
     }
   /* Render the scene */
   dataItem->externalVTKWidget->GetRenderWindow()->Render();
-
-  glPopAttrib();
 
       clippingPlaneIndex = 0;
     for (int i = 0; i < NumberOfClippingPlanes && clippingPlaneIndex < numberOfSupportedClippingPlanes; ++i) {
