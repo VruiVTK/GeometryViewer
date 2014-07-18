@@ -9,11 +9,11 @@
   <head>
     <meta charset='utf-8' />
     <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="VruiVTK : Application demonstrating the use of vtkRenderingExternal module to render VTK objects in the VRUI context" />
+    <meta name="description" content="GeometryViewer : Application demonstrating the use of vtkRenderingExternal module to render VTK objects in the VRUI context" />
 
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
-    <title>VruiVTK</title>
+    <title>GeometryViewer</title>
   </head>
 
   <body>
@@ -21,14 +21,14 @@
     <!-- HEADER -->
     <div id="header_wrap" class="outer">
         <header class="inner">
-          <a id="forkme_banner" href="https://github.com/VruiVTK/VruiVTK">View on GitHub</a>
+          <a id="forkme_banner" href="https://github.com/VruiVTK/GeometryViewer">View on GitHub</a>
 
-          <h1 id="project_title">Vruivtk</h1>
+          <h1 id="project_title">GeometryViewer</h1>
           <h2 id="project_tagline">Application demonstrating the use of vtkRenderingExternal module to render VTK objects in the VRUI context</h2>
 
             <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/VruiVTK/VruiVTK/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/VruiVTK/VruiVTK/tarball/master">Download this project as a tar.gz file</a>
+              <a class="zip_download_link" href="https://github.com/VruiVTK/GeometryViewer/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/VruiVTK/GeometryViewer/tarball/master">Download this project as a tar.gz file</a>
             </section>
         </header>
     </div>
@@ -37,7 +37,7 @@
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
         <h3>
-<a name="welcome-to-vruivtk" class="anchor" href="#welcome-to-vruivtk"><span class="octicon octicon-link"></span></a>Welcome to VruiVTK</h3>
+<a name="welcome-to-geometryviewer" class="anchor" href="#welcome-to-geometryviewer"><span class="octicon octicon-link"></span></a>Welcome to GeometryViewer</h3>
 
 <p>This application demonstrates use of the new vtkRenderingExternal module for VRUI and VTK integration.</p>
 
@@ -50,24 +50,24 @@
 </ul><h3>
 <a name="prerequisites" class="anchor" href="#prerequisites"><span class="octicon octicon-link"></span></a>Prerequisites</h3>
 
-<p>NOTE: To build VruiVTK along with all its prerequisites, simply build the superbuild from <a href="https://github.com/vruivtk/Vruivtksuperbuild">VruiVTKSuperbuild</a></p>
+<p>NOTE: To build GeometryViewer along with all its prerequisites, simply build the superbuild from <a href="https://github.com/vruivtk/Vruivtksuperbuild">GeometryViewerSuperbuild</a></p>
 
-<p>VruiVTK application requires the following software to be built and installed.</p>
+<p>GeometryViewer application requires the following software to be built and installed.</p>
 
 <ul>
 <li><a href="http://cmake.org">CMake</a></li>
 <li><a href="http://idav.ucdavis.edu/%7Eokreylos/ResDev/Vrui/">Vrui</a></li>
 <li><a href="https://github.com/sankhesh/VTK/tree/Rendering_External_Module">VTK with the vtkRenderingExternal module turned ON</a></li>
 </ul><h3>
-<a name="clone-vruivtk-source" class="anchor" href="#clone-vruivtk-source"><span class="octicon octicon-link"></span></a>Clone VruiVTK source</h3>
+<a name="clone-vruivtk-source" class="anchor" href="#clone-vruivtk-source"><span class="octicon octicon-link"></span></a>Clone GeometryViewer source</h3>
 
-<p>The VruiVTK application can be built from source obtained using one of the download links on this page or using the commandline as follows:</p>
+<p>The GeometryViewer application can be built from source obtained using one of the download links on this page or using the commandline as follows:</p>
 
 <p><code>
-$ git clone https://github.com/VruiVTK/VruiVTK.git
+$ git clone https://github.com/VruiVTK/GeometryViewer.git
 </code></p>
 
-<p>The above command creates a directory <em>VruiVTK</em> with the source code.</p>
+<p>The above command creates a directory <em>GeometryViewer</em> with the source code.</p>
 
 <h3>
 <a name="configure-instructions" class="anchor" href="#configure-instructions"><span class="octicon octicon-link"></span></a>Configure Instructions</h3>
@@ -91,30 +91,30 @@ $ git clone https://github.com/VruiVTK/VruiVTK.git
 </code></pre>
 
 <h3>
-<a name="run-vruivtk" class="anchor" href="#run-vruivtk"><span class="octicon octicon-link"></span></a>Run VruiVTK</h3>
+<a name="run-vruivtk" class="anchor" href="#run-vruivtk"><span class="octicon octicon-link"></span></a>Run GeometryViewer</h3>
 
-<p>The build step will create an executable <em>VruiVTK</em> under the build directory that can be used to run the application.
+<p>The build step will create an executable <em>GeometryViewer</em> under the build directory that can be used to run the application.
 To get usage instructions for the application:</p>
 
-<pre><code>$ ./VruiVTK -help
+<pre><code>$ ./GeometryViewer -help
 </code></pre>
 
 <p>To render an OBJ file using VTK, use the '-f' or '-fileName' argument.</p>
 
-<pre><code>$ ./VruiVTK -f cow-nonormals.obj
+<pre><code>$ ./GeometryViewer -f cow-nonormals.obj
 </code></pre>
-<p><img src="images/Screenshot from 2014-06-10 12_47_34.png" alt="VruiVTK with VTK Cow"></p>
+<p><img src="images/Screenshot from 2014-06-10 12_47_34.png" alt="GeometryViewer with VTK Cow"></p>
 <p>The above image shows VTK rendering an OBJ dataset in the VRUI context. The dataset was obtained from <a href="http://groups.csail.mit.edu/graphics/classes/6.837/F03/models/cow-nonormals.obj">here</a>.</p>
 
 <p>If no arguments are provided, the application will bring up a VRUI window with a vtkCube rendered at its origin.</p>
-<pre><code>$ ./VruiVTK
+<pre><code>$ ./GeometryViewer
 </code></pre>
-<p><img src="images/Screenshot from 2014-06-10 12_45_06.png" alt="VruiVTK with vtkCube"></p>
+<p><img src="images/Screenshot from 2014-06-10 12_45_06.png" alt="GeometryViewer with vtkCube"></p>
 
 <h3>
 <a name="sample-configuration-files" class="anchor" href="#sample-configuration-files"><span class="octicon octicon-link"></span></a>Sample Configuration Files</h3>
 <p>A couple of sample configuration files are added to the <a
-  href="https://github.com/VruiVTK/VruiVTK/tree/master/config">config</a>
+  href="https://github.com/VruiVTK/GeometryViewer/tree/master/config">config</a>
 directory. <br>
 To use the sample files simply copy the files to the <code>etc</code> directory of
 your VRUI installation.<br>
@@ -129,25 +129,25 @@ with a VRPN server of hostname <em>OptiTrackServer</em>. The server uses the
 </ul>
 The configuration files are merely the default configuration files for
 Vrui-3.1-002 with the required changes made to the <code>3dtv</code>(<a
-  href="https://github.com/VruiVTK/VruiVTK/blob/997766af95465339b1ddc614fa941978fff7c29b/config/VRDevices.cfg#L149-238">VRDevices.cfg</a>,
+  href="https://github.com/VruiVTK/GeometryViewer/blob/997766af95465339b1ddc614fa941978fff7c29b/config/VRDevices.cfg#L149-238">VRDevices.cfg</a>,
 <a
-href="https://github.com/VruiVTK/VruiVTK/blob/997766af95465339b1ddc614fa941978fff7c29b/config/Vrui.cfg#L1044-1302">Vrui.cfg</a>) section.
+href="https://github.com/VruiVTK/GeometryViewer/blob/997766af95465339b1ddc614fa941978fff7c29b/config/Vrui.cfg#L1044-1302">Vrui.cfg</a>) section.
 </p>
 
 <p> To run the device daemon, </p>
 <pre><code>$ <VRUI-install-dir>/bin/VRDeviceDaemon -rootSection 3dtv</code></pre>
 <p> To run the application, </p>
-<pre><code>$ ./VruiVTK -rootSection 3dtv</code></pre>
+<pre><code>$ ./GeometryViewer -rootSection 3dtv</code></pre>
 
 <h3>
 <a name="demonstration" class="anchor" href="#demonstration"><span class="octicon octicon-link"></span></a>Demonstration</h3>
 <p> As a demonstration of the integration, a sample menu is added to the application as shown in the following figure. </p>
-<p><img src="images/Screenshot from 2014-06-10 13-05-26.png" alt="VruiVTK with vtkCube"></p>
+<p><img src="images/Screenshot from 2014-06-10 13-05-26.png" alt="GeometryViewer with vtkCube"></p>
 
 <p> The <strong>Center Display</strong> button resets the camera and positions the object upright at the origin.
 The <strong>Representation</strong> sub-menu provides custom GUI widgets to control object representation.</p>
 
-<p> The following is a demo video showing most aspects of the VruiVTK application. </p>
+<p> The following is a demo video showing most aspects of the GeometryViewer application. </p>
 <iframe src="https://docs.google.com/a/kitware.com/file/d/0Bxgq5zla1NcFRnUxVElFcGpRVE0/preview"
 width="640" height="385" onload="totop()"></iframe>
 
