@@ -21,6 +21,7 @@
 #include <Vrui/Tool.h>
 #include <Vrui/ToolManager.h>
 #include <Vrui/Vrui.h>
+#include <Vrui/WindowProperties.h>
 
 // VTK includes
 #include <ExternalVTKWidget.h>
@@ -53,6 +54,11 @@ VruiVTK::DataItem::DataItem(void)
   this->flashlight->SetConeAngle(10);
   this->flashlight->SetPositional(true);
   this->externalVTKWidget->GetRenderer()->AddLight(this->flashlight);
+
+  /* Use depth peeling to enable transparency */
+  this->externalVTKWidget->GetRenderer()->SetUseDepthPeeling(1);
+  this->externalVTKWidget->GetRenderer()->SetMaximumNumberOfPeels(4);
+  this->externalVTKWidget->GetRenderer()->SetOcclusionRatio(0.1);
 }
 
 //----------------------------------------------------------------------------
@@ -77,6 +83,16 @@ VruiVTK::VruiVTK(int& argc,char**& argv)
   FlashlightPosition(0),
   FlashlightDirection(0)
 {
+  /* Set Window properties:
+   * Since the application requires translucency, GLX_ALPHA_SIZE is set to 1 at
+   * context (VRWindow) creation time. To do this, we set the 4th component of
+   * ColorBufferSize in WindowProperties to 1. This should be done in the
+   * constructor to make sure it is set before the main loop is called.
+   */
+  Vrui::WindowProperties properties;
+  properties.setColorBufferSize(0,1);
+  Vrui::requestWindowProperties(properties);
+
   /* Create the user interface: */
   renderingDialog = createRenderingDialog();
   mainMenu=createMainMenu();
