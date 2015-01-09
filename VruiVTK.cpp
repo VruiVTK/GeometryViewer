@@ -47,19 +47,20 @@ VruiVTK::DataItem::DataItem(void)
   /* Initialize VTK renderwindow and renderer */
   this->externalVTKWidget = vtkSmartPointer<ExternalVTKWidget>::New();
   this->actor = vtkSmartPointer<vtkActor>::New();
-  this->externalVTKWidget->GetRenderer()->AddActor(this->actor);
+  vtkRenderer* ren = this->externalVTKWidget->AddRenderer();
+  ren->AddActor(this->actor);
   this->flashlight = vtkSmartPointer<vtkLight>::New();
   this->flashlight->SwitchOff();
   this->flashlight->SetLightTypeToHeadlight();
   this->flashlight->SetColor(0.0, 1.0, 1.0);
   this->flashlight->SetConeAngle(10);
   this->flashlight->SetPositional(true);
-  this->externalVTKWidget->GetRenderer()->AddLight(this->flashlight);
+  ren->AddLight(this->flashlight);
 
   /* Use depth peeling to enable transparency */
-  this->externalVTKWidget->GetRenderer()->SetUseDepthPeeling(1);
-  this->externalVTKWidget->GetRenderer()->SetMaximumNumberOfPeels(4);
-  this->externalVTKWidget->GetRenderer()->SetOcclusionRatio(0.1);
+  ren->SetUseDepthPeeling(1);
+  ren->SetMaximumNumberOfPeels(4);
+  ren->SetOcclusionRatio(0.1);
 }
 
 //----------------------------------------------------------------------------
