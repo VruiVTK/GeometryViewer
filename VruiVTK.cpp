@@ -329,9 +329,6 @@ void VruiVTK::display(GLContextData& contextData) const
   /* Get context data item */
   DataItem* dataItem = contextData.retrieveDataItem<DataItem>(this);
 
-  dataItem->externalVTKWidget->GetRenderWindow()->SetSize(
-    const_cast<int*>(Vrui::getWindow(0)->getViewportSize()));
-
   if(this->FlashlightSwitch[0])
     {
     dataItem->flashlight->SetPosition(this->FlashlightPosition);
