@@ -3,6 +3,16 @@
 #include <string>
 #include <math.h>
 
+// VTK includes
+#include <ExternalVTKWidget.h>
+#include <vtkActor.h>
+#include <vtkCubeSource.h>
+#include <vtkLight.h>
+#include <vtkNew.h>
+#include <vtkOBJReader.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkProperty.h>
+
 // OpenGL/Motif includes
 #include <GL/GLContextData.h>
 #include <GL/gl.h>
@@ -23,16 +33,6 @@
 #include <Vrui/Vrui.h>
 #include <Vrui/VRWindow.h>
 #include <Vrui/WindowProperties.h>
-
-// VTK includes
-#include <ExternalVTKWidget.h>
-#include <vtkActor.h>
-#include <vtkCubeSource.h>
-#include <vtkLight.h>
-#include <vtkNew.h>
-#include <vtkOBJReader.h>
-#include <vtkPolyDataMapper.h>
-#include <vtkProperty.h>
 
 // VruiVTK includes
 #include "BaseLocator.h"
