@@ -10,6 +10,7 @@
 #include <ExternalVTKWidget.h>
 #include <vtkActor.h>
 #include <vtkCubeSource.h>
+#include <vtkExternalLight.h>
 #include <vtkLight.h>
 #include <vtkNew.h>
 #include <vtkOBJReader.h>
@@ -49,8 +50,17 @@ VruiVTK::DataItem::DataItem(void)
   /* Initialize VTK renderwindow and renderer */
   this->externalVTKWidget = vtkSmartPointer<ExternalVTKWidget>::New();
   this->actor = vtkSmartPointer<vtkActor>::New();
-  vtkRenderer* ren = this->externalVTKWidget->AddRenderer();
+  vtkExternalOpenGLRenderer* ren = this->externalVTKWidget->AddRenderer();
   ren->AddActor(this->actor);
+
+  // Add external light to tweak the intensity and color of externally
+  // created flashlight
+  // NOTE: We know that VRUI creates flashlight with index GL_LIGHT1
+  vtkNew<vtkExternalLight> externalLight;
+  externalLight->SetLightIndex(GL_LIGHT1);
+  externalLight->SetIntensity(0.2);
+  externalLight->SetDiffuseColor(0.0, 1.0, 1.0);
+  ren->AddExternalLight(externalLight.GetPointer());
 
   /* Use depth peeling to enable transparency */
   ren->SetUseDepthPeeling(1);
