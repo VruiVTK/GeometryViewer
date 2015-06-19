@@ -1,3 +1,4 @@
+// GeometryViewer includes
 #include "ClippingPlane.h"
 
 /*

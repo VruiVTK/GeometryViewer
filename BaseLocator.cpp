@@ -1,24 +1,28 @@
-#include <Vrui/LocatorTool.h>
+// GeometryViewer includes
+#include "GeometryViewer.h"
 
 #include "BaseLocator.h"
-#include "VruiVTK.h"
+
+// Vrui includes
+#include <Vrui/LocatorTool.h>
+
 
 /*
  * BaseLocator
  *
  * parameter _locatorTool - Vrui::LocatorTool*
- * parameter _application - VruiVTK*
+ * parameter _geometryViewer - GeometryViewer*
  */
-BaseLocator::BaseLocator(Vrui::LocatorTool* _locatorTool, VruiVTK* _application) :
+BaseLocator::BaseLocator(Vrui::LocatorTool* _locatorTool, GeometryViewer* _geometryViewer) :
 	Vrui::LocatorToolAdapter(_locatorTool) {
-	application = _application;
+	geometryViewer = _geometryViewer;
 } // end BaseLocator()
 
 /*
  * ~BaseLocator - Destructor
  */
 BaseLocator::~BaseLocator(void) {
-	application = 0;
+	geometryViewer = 0;
 } // end ~BaseLocator()
 
 /*

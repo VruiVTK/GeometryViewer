@@ -1,7 +1,10 @@
-#ifndef _VRUIVTK_H
-#define _VRUIVTK_H
+#ifndef _GEOMETRYVIEWER_H
+#define _GEOMETRYVIEWER_H
 
 // OpenGL/Motif includes
+// Must come before any gl.h include
+#include <GL/glew.h>
+
 #include <GL/gl.h>
 
 // Vrui includes
@@ -26,9 +29,12 @@ class vtkActor;
 class BaseLocator;
 class ClippingPlane;
 class ExternalVTKWidget;
+class Lighting;
+class RGBAColor;
+class vtkExternalLight;
 class vtkLight;
 
-class VruiVTK:public Vrui::Application,public GLObject
+class GeometryViewer:public Vrui::Application,public GLObject
 {
 /* Embedded classes: */
   typedef std::vector<BaseLocator*> BaseLocatorList;
@@ -39,6 +45,7 @@ private:
   public:
     /* VTK components */
     vtkSmartPointer<ExternalVTKWidget> externalVTKWidget;
+    vtkSmartPointer<vtkExternalLight> externalLight;
     vtkSmartPointer<vtkActor> actor;
     vtkSmartPointer<vtkLight> flashlight;
 
@@ -52,6 +59,7 @@ private:
   GLMotif::PopupMenu* createMainMenu(void);
   GLMotif::Popup* createRepresentationMenu(void);
   GLMotif::Popup* createAnalysisToolsMenu(void);
+  GLMotif::PopupWindow* lightingDialog;
   GLMotif::PopupWindow* renderingDialog;
   GLMotif::PopupWindow* createRenderingDialog(void);
   GLMotif::TextField* opacityValue;
@@ -91,10 +99,15 @@ private:
   double * FlashlightPosition;
   double * FlashlightDirection;
 
+  RGBAColor * ambientColor;
+  RGBAColor * diffuseColor;
+  RGBAColor * specularColor;
+  float intensity;
+
   /* Constructors and destructors: */
 public:
-  VruiVTK(int& argc,char**& argv);
-  virtual ~VruiVTK(void);
+  GeometryViewer(int& argc,char**& argv);
+  virtual ~GeometryViewer(void);
 
   /* Methods to set/get the filename to read */
   void setFileName(const char* name);
@@ -118,11 +131,18 @@ public:
   void centerDisplayCallback(Misc::CallbackData* cbData);
   void opacitySliderCallback(GLMotif::Slider::ValueChangedCallbackData* cbData);
   void changeRepresentationCallback(GLMotif::ToggleButton::ValueChangedCallbackData* callBackData);
+  void showLightingDialogCallback(GLMotif::ToggleButton::ValueChangedCallbackData* callBackData);
   void showRenderingDialogCallback(GLMotif::ToggleButton::ValueChangedCallbackData* callBackData);
   void changeAnalysisToolsCallback(GLMotif::ToggleButton::ValueChangedCallbackData* callBackData);
+
+  void setAmbientColor(float r, float g, float b);
+  void setDiffuseColor(float r, float g, float b);
+  void setSpecularColor(float r, float g, float b);
+  void setIntensity(float intensity);
+
 
   virtual void toolCreationCallback(Vrui::ToolManager::ToolCreationCallbackData* cbData);
   virtual void toolDestructionCallback(Vrui::ToolManager::ToolDestructionCallbackData* cbData);
 };
 
-#endif //_VRUIVTK_H
+#endif //_GEOMETRYVIEWER_H

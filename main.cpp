@@ -2,20 +2,20 @@
 #include <iostream>
 #include <string>
 
-// VruiVTK includes
-#include "VruiVTK.h"
+// GeometryViewer includes
+#include "GeometryViewer.h"
 
 void printUsage(void)
 {
-  std::cout << "\nVruiVTK - Render VTK objects in the VRUI context" << std::endl;
-  std::cout << "\nUSAGE:\n\t./VruiVTK [-f <string>] [-h]" << std::endl;
+  std::cout << "\nGeometryViewer - Render VTK objects in the VRUI context" << std::endl;
+  std::cout << "\nUSAGE:\n\t./GeometryViewer [-f <string>] [-h]" << std::endl;
   std::cout << "\nWhere:" << std::endl;
   std::cout << "\t-f <string>, -fileName <string>" << std::endl;
   std::cout << "\tName of OBJ file to load using VTK.\n" << std::endl;
   std::cout << "\t-h, -help" << std::endl;
   std::cout << "\tDisplay this usage information and exit." << std::endl;
   std::cout << "\nAdditionally, all the commandline switches the VRUI " <<
-    "accepts can be passed to VruiVTK.\nFor example, -rootSection," <<
+    "accepts can be passed to GeometryViewer.\nFor example, -rootSection," <<
     " -vruiVerbose, -vruiHelp, etc.\n" << std::endl;
 }
 
@@ -50,7 +50,7 @@ int main(int argc, char* argv[])
         }
       }
 
-    VruiVTK application(argc, argv);
+    GeometryViewer application(argc, argv);
     if(!name.empty())
       {
       application.setFileName(name.c_str());

@@ -1,15 +1,21 @@
-// STD includes
+// GeometryViewer includes
+#include "GeometryViewer.h"
+
+#include "BaseLocator.h"
+#include "ClippingPlane.h"
+#include "ClippingPlaneLocator.h"
+#include "Lighting.h"
+#include "RGBAColor.h"
+
 #include <iostream>
 #include <string>
 #include <math.h>
-
-// Must come before any gl.h include
-#include <GL/glew.h>
 
 // VTK includes
 #include <ExternalVTKWidget.h>
 #include <vtkActor.h>
 #include <vtkCubeSource.h>
+#include <vtkExternalLight.h>
 #include <vtkLight.h>
 #include <vtkNew.h>
 #include <vtkOBJReader.h>
@@ -18,7 +24,6 @@
 
 // OpenGL/Motif includes
 #include <GL/GLContextData.h>
-#include <GL/gl.h>
 #include <GLMotif/CascadeButton.h>
 #include <GLMotif/Menu.h>
 #include <GLMotif/Popup.h>
@@ -37,20 +42,24 @@
 #include <Vrui/VRWindow.h>
 #include <Vrui/WindowProperties.h>
 
-// VruiVTK includes
-#include "BaseLocator.h"
-#include "ClippingPlane.h"
-#include "ClippingPlaneLocator.h"
-#include "VruiVTK.h"
-
 //----------------------------------------------------------------------------
-VruiVTK::DataItem::DataItem(void)
+GeometryViewer::DataItem::DataItem(void)
 {
   /* Initialize VTK renderwindow and renderer */
   this->externalVTKWidget = vtkSmartPointer<ExternalVTKWidget>::New();
   this->actor = vtkSmartPointer<vtkActor>::New();
-  vtkRenderer* ren = this->externalVTKWidget->AddRenderer();
+  vtkExternalOpenGLRenderer* ren = this->externalVTKWidget->AddRenderer();
   ren->AddActor(this->actor);
+
+  // Add external light to tweak the intensity and color of externally
+  // created headlight
+  // NOTE: We know that VRUI creates a headlight with index GL_LIGHT0
+  this->externalLight = vtkSmartPointer<vtkExternalLight>::New();
+  this->externalLight->SetLightIndex(GL_LIGHT0);
+  this->externalLight->SetIntensity(1.0);
+  this->externalLight->SetDiffuseColor(1.0, 1.0, 1.0);
+  ren->AddExternalLight(this->externalLight);
+
 
   /* Use depth peeling to enable transparency */
   ren->SetUseDepthPeeling(1);
@@ -59,14 +68,15 @@ VruiVTK::DataItem::DataItem(void)
 }
 
 //----------------------------------------------------------------------------
-VruiVTK::DataItem::~DataItem(void)
+GeometryViewer::DataItem::~DataItem(void)
 {
 }
 
 //----------------------------------------------------------------------------
-VruiVTK::VruiVTK(int& argc,char**& argv)
+GeometryViewer::GeometryViewer(int& argc,char**& argv)
   :Vrui::Application(argc,argv),
   FileName(0),
+  intensity(1.0),
   mainMenu(NULL),
   renderingDialog(NULL),
   Opacity(1.0),
@@ -89,6 +99,13 @@ VruiVTK::VruiVTK(int& argc,char**& argv)
 
   /* Create the user interface: */
   renderingDialog = createRenderingDialog();
+
+  ambientColor = new RGBAColor(0.0f, 0.0f, 0.0f, 0.0f);
+  diffuseColor = new RGBAColor(1.0f, 1.0f, 1.0f, 0.0f);
+  specularColor = new RGBAColor(0.0f, 0.0f, 0.0f, 0.0f);
+
+  lightingDialog = new Lighting(this);
+
   mainMenu=createMainMenu();
   Vrui::setMainMenu(mainMenu);
 
@@ -104,7 +121,7 @@ VruiVTK::VruiVTK(int& argc,char**& argv)
 }
 
 //----------------------------------------------------------------------------
-VruiVTK::~VruiVTK(void)
+GeometryViewer::~GeometryViewer(void)
 {
   if(this->DataBounds)
     {
@@ -113,7 +130,7 @@ VruiVTK::~VruiVTK(void)
 }
 
 //----------------------------------------------------------------------------
-void VruiVTK::setFileName(const char* name)
+void GeometryViewer::setFileName(const char* name)
 {
   if(this->FileName && name && (!strcmp(this->FileName, name)))
     {
@@ -128,13 +145,13 @@ void VruiVTK::setFileName(const char* name)
 }
 
 //----------------------------------------------------------------------------
-const char* VruiVTK::getFileName(void)
+const char* GeometryViewer::getFileName(void)
 {
   return this->FileName;
 }
 
 //----------------------------------------------------------------------------
-GLMotif::PopupMenu* VruiVTK::createMainMenu(void)
+GLMotif::PopupMenu* GeometryViewer::createMainMenu(void)
 {
   GLMotif::PopupMenu* mainMenuPopup = new GLMotif::PopupMenu("MainMenuPopup",Vrui::getWidgetManager());
   mainMenuPopup->setTitle("Main Menu");
@@ -149,19 +166,24 @@ GLMotif::PopupMenu* VruiVTK::createMainMenu(void)
   analysisToolsCascade->setPopup(createAnalysisToolsMenu());
 
   GLMotif::Button* centerDisplayButton = new GLMotif::Button("CenterDisplayButton",mainMenu,"Center Display");
-  centerDisplayButton->getSelectCallbacks().add(this,&VruiVTK::centerDisplayCallback);
+  centerDisplayButton->getSelectCallbacks().add(this,&GeometryViewer::centerDisplayCallback);
 
   GLMotif::ToggleButton * showRenderingDialog = new GLMotif::ToggleButton("ShowRenderingDialog", mainMenu,
     "Rendering");
   showRenderingDialog->setToggle(false);
-  showRenderingDialog->getValueChangedCallbacks().add(this, &VruiVTK::showRenderingDialogCallback);
+  showRenderingDialog->getValueChangedCallbacks().add(this, &GeometryViewer::showRenderingDialogCallback);
+
+  GLMotif::ToggleButton * showLightingDialog = new GLMotif::ToggleButton("ShowLightingDialog", mainMenu,
+    "Lighting");
+  showLightingDialog->setToggle(false);
+  showLightingDialog->getValueChangedCallbacks().add(this, &GeometryViewer::showLightingDialogCallback);
 
   mainMenu->manageChild();
   return mainMenuPopup;
 }
 
 //----------------------------------------------------------------------------
-GLMotif::Popup* VruiVTK::createRepresentationMenu(void)
+GLMotif::Popup* GeometryViewer::createRepresentationMenu(void)
 {
   const GLMotif::StyleSheet* ss = Vrui::getWidgetManager()->getStyleSheet();
 
@@ -171,13 +193,13 @@ GLMotif::Popup* VruiVTK::createRepresentationMenu(void)
   GLMotif::RadioBox* representation_RadioBox = new GLMotif::RadioBox("Representation RadioBox",representationMenu,true);
 
   GLMotif::ToggleButton* showSurface=new GLMotif::ToggleButton("ShowSurface",representation_RadioBox,"Surface");
-  showSurface->getValueChangedCallbacks().add(this,&VruiVTK::changeRepresentationCallback);
+  showSurface->getValueChangedCallbacks().add(this,&GeometryViewer::changeRepresentationCallback);
   GLMotif::ToggleButton* showSurfaceWEdges=new GLMotif::ToggleButton("ShowSurfaceWEdges",representation_RadioBox,"Surface With Edges");
-  showSurfaceWEdges->getValueChangedCallbacks().add(this,&VruiVTK::changeRepresentationCallback);
+  showSurfaceWEdges->getValueChangedCallbacks().add(this,&GeometryViewer::changeRepresentationCallback);
   GLMotif::ToggleButton* showWireframe=new GLMotif::ToggleButton("ShowWireframe",representation_RadioBox,"Wireframe");
-  showWireframe->getValueChangedCallbacks().add(this,&VruiVTK::changeRepresentationCallback);
+  showWireframe->getValueChangedCallbacks().add(this,&GeometryViewer::changeRepresentationCallback);
   GLMotif::ToggleButton* showPoints=new GLMotif::ToggleButton("ShowPoints",representation_RadioBox,"Points");
-  showPoints->getValueChangedCallbacks().add(this,&VruiVTK::changeRepresentationCallback);
+  showPoints->getValueChangedCallbacks().add(this,&GeometryViewer::changeRepresentationCallback);
 
   representation_RadioBox->setSelectionMode(GLMotif::RadioBox::ATMOST_ONE);
   representation_RadioBox->setSelectedToggle(showSurface);
@@ -187,7 +209,7 @@ GLMotif::Popup* VruiVTK::createRepresentationMenu(void)
 }
 
 //----------------------------------------------------------------------------
-GLMotif::Popup * VruiVTK::createAnalysisToolsMenu(void)
+GLMotif::Popup * GeometryViewer::createAnalysisToolsMenu(void)
 {
   const GLMotif::StyleSheet* ss = Vrui::getWidgetManager()->getStyleSheet();
 
@@ -197,7 +219,7 @@ GLMotif::Popup * VruiVTK::createAnalysisToolsMenu(void)
   GLMotif::RadioBox * analysisTools_RadioBox = new GLMotif::RadioBox("analysisTools", analysisToolsMenu, true);
 
   GLMotif::ToggleButton* showClippingPlane=new GLMotif::ToggleButton("ClippingPlane",analysisTools_RadioBox,"Clipping Plane");
-  showClippingPlane->getValueChangedCallbacks().add(this,&VruiVTK::changeAnalysisToolsCallback);
+  showClippingPlane->getValueChangedCallbacks().add(this,&GeometryViewer::changeAnalysisToolsCallback);
 
   analysisTools_RadioBox->setSelectionMode(GLMotif::RadioBox::ALWAYS_ONE);
   analysisTools_RadioBox->setSelectedToggle(showClippingPlane);
@@ -207,7 +229,7 @@ GLMotif::Popup * VruiVTK::createAnalysisToolsMenu(void)
 }
 
 //----------------------------------------------------------------------------
-GLMotif::PopupWindow* VruiVTK::createRenderingDialog(void) {
+GLMotif::PopupWindow* GeometryViewer::createRenderingDialog(void) {
   const GLMotif::StyleSheet& ss = *Vrui::getWidgetManager()->getStyleSheet();
   GLMotif::PopupWindow * dialogPopup = new GLMotif::PopupWindow("RenderingDialogPopup", Vrui::getWidgetManager(),
     "Rendering Dialog");
@@ -219,7 +241,7 @@ GLMotif::PopupWindow* VruiVTK::createRenderingDialog(void) {
     ss.fontHeight*10.0f);
   opacitySlider->setValue(Opacity);
   opacitySlider->setValueRange(0.0, 1.0, 0.1);
-  opacitySlider->getValueChangedCallbacks().add(this, &VruiVTK::opacitySliderCallback);
+  opacitySlider->getValueChangedCallbacks().add(this, &GeometryViewer::opacitySliderCallback);
   opacityValue = new GLMotif::TextField("OpacityValue", dialog, 6);
   opacityValue->setFieldWidth(6);
   opacityValue->setPrecision(3);
@@ -230,7 +252,7 @@ GLMotif::PopupWindow* VruiVTK::createRenderingDialog(void) {
 }
 
 //----------------------------------------------------------------------------
-void VruiVTK::frame(void)
+void GeometryViewer::frame(void)
 {
   if(this->FirstFrame)
     {
@@ -254,7 +276,7 @@ void VruiVTK::frame(void)
 }
 
 //----------------------------------------------------------------------------
-void VruiVTK::initContext(GLContextData& contextData) const
+void GeometryViewer::initContext(GLContextData& contextData) const
 {
   // The VTK OpenGL2 backend seems to require this:
   GLenum glewInitResult = glewInit();
@@ -289,7 +311,7 @@ void VruiVTK::initContext(GLContextData& contextData) const
 }
 
 //----------------------------------------------------------------------------
-void VruiVTK::display(GLContextData& contextData) const
+void GeometryViewer::display(GLContextData& contextData) const
 {
     int numberOfSupportedClippingPlanes;
     glGetIntegerv(GL_MAX_CLIP_PLANES, &numberOfSupportedClippingPlanes);
@@ -311,6 +333,11 @@ void VruiVTK::display(GLContextData& contextData) const
   /* Get context data item */
   DataItem* dataItem = contextData.retrieveDataItem<DataItem>(this);
 
+  /* Set light properties */
+  dataItem->externalLight->SetIntensity(this->intensity);
+  dataItem->externalLight->SetAmbientColor(this->ambientColor->getValues(0), this->ambientColor->getValues(1), this->ambientColor->getValues(2));
+  dataItem->externalLight->SetDiffuseColor(this->diffuseColor->getValues(0), this->diffuseColor->getValues(1), this->diffuseColor->getValues(2));
+  dataItem->externalLight->SetSpecularColor(this->specularColor->getValues(0), this->specularColor->getValues(1), this->specularColor->getValues(2));
   /* Set actor opacity */
   dataItem->actor->GetProperty()->SetOpacity(this->Opacity);
   if(this->RepresentationType < 3)
@@ -338,7 +365,36 @@ void VruiVTK::display(GLContextData& contextData) const
 }
 
 //----------------------------------------------------------------------------
-void VruiVTK::centerDisplayCallback(Misc::CallbackData* callBackData)
+void GeometryViewer::setAmbientColor(float r, float g, float b)
+{
+    this->ambientColor->setValues(0, r);
+    this->ambientColor->setValues(1, g);
+    this->ambientColor->setValues(2, b);
+}
+
+//----------------------------------------------------------------------------
+void GeometryViewer::setDiffuseColor(float r, float g, float b)
+{
+    this->diffuseColor->setValues(0, r);
+    this->diffuseColor->setValues(1, g);
+    this->diffuseColor->setValues(2, b);
+}
+
+//----------------------------------------------------------------------------
+void GeometryViewer::setSpecularColor(float r, float g, float b)
+{
+    this->specularColor->setValues(0, r);
+    this->specularColor->setValues(1, g);
+    this->specularColor->setValues(2, b);
+}
+
+//----------------------------------------------------------------------------
+void GeometryViewer::setIntensity(float intensity)
+{
+    this->intensity = intensity;
+}
+//----------------------------------------------------------------------------
+void GeometryViewer::centerDisplayCallback(Misc::CallbackData* callBackData)
 {
   if(!this->DataBounds)
     {
@@ -349,7 +405,7 @@ void VruiVTK::centerDisplayCallback(Misc::CallbackData* callBackData)
 }
 
 //----------------------------------------------------------------------------
-void VruiVTK::opacitySliderCallback(
+void GeometryViewer::opacitySliderCallback(
   GLMotif::Slider::ValueChangedCallbackData* callBackData)
 {
   this->Opacity = static_cast<double>(callBackData->value);
@@ -357,7 +413,7 @@ void VruiVTK::opacitySliderCallback(
 }
 
 //----------------------------------------------------------------------------
-void VruiVTK::changeRepresentationCallback(GLMotif::ToggleButton::ValueChangedCallbackData* callBackData)
+void GeometryViewer::changeRepresentationCallback(GLMotif::ToggleButton::ValueChangedCallbackData* callBackData)
 {
     /* Adjust representation state based on which toggle button changed state: */
     if (strcmp(callBackData->toggle->getName(), "ShowSurface") == 0)
@@ -378,7 +434,7 @@ void VruiVTK::changeRepresentationCallback(GLMotif::ToggleButton::ValueChangedCa
     }
 }
 //----------------------------------------------------------------------------
-void VruiVTK::changeAnalysisToolsCallback(GLMotif::ToggleButton::ValueChangedCallbackData* callBackData)
+void GeometryViewer::changeAnalysisToolsCallback(GLMotif::ToggleButton::ValueChangedCallbackData* callBackData)
 {
     /* Set the new analysis tool: */
     if (strcmp(callBackData->toggle->getName(), "ClippingPlane") == 0)
@@ -388,7 +444,7 @@ void VruiVTK::changeAnalysisToolsCallback(GLMotif::ToggleButton::ValueChangedCal
 }
 
 //----------------------------------------------------------------------------
-void VruiVTK::showRenderingDialogCallback(GLMotif::ToggleButton::ValueChangedCallbackData* callBackData)
+void GeometryViewer::showRenderingDialogCallback(GLMotif::ToggleButton::ValueChangedCallbackData* callBackData)
 {
     /* open/close rendering dialog based on which toggle button changed state: */
   if (strcmp(callBackData->toggle->getName(), "ShowRenderingDialog") == 0) {
@@ -402,20 +458,40 @@ void VruiVTK::showRenderingDialogCallback(GLMotif::ToggleButton::ValueChangedCal
   }
 }
 
+void GeometryViewer::showLightingDialogCallback(
+  GLMotif::ToggleButton::ValueChangedCallbackData* callBackData)
+{
+  /* open/close lighting dialog based on which toggle button changed state: */
+  if (strcmp(callBackData->toggle->getName(), "ShowLightingDialog") == 0)
+    {
+    if (callBackData->set)
+      {
+      /* Open the lighting dialog at the same position as the main menu: */
+      Vrui::getWidgetManager()->popupPrimaryWidget(lightingDialog,
+        Vrui::getWidgetManager()->calcWidgetTransformation(mainMenu));
+      }
+    else
+      {
+      /* Close the lighting dialog: */
+      Vrui::popdownPrimaryWidget(lightingDialog);
+      }
+    }
+}
+
 //----------------------------------------------------------------------------
-ClippingPlane * VruiVTK::getClippingPlanes(void)
+ClippingPlane * GeometryViewer::getClippingPlanes(void)
 {
   return this->ClippingPlanes;
 }
 
 //----------------------------------------------------------------------------
-int VruiVTK::getNumberOfClippingPlanes(void)
+int GeometryViewer::getNumberOfClippingPlanes(void)
 {
     return this->NumberOfClippingPlanes;
 }
 
 //----------------------------------------------------------------------------
-void VruiVTK::toolCreationCallback(Vrui::ToolManager::ToolCreationCallbackData * callbackData) {
+void GeometryViewer::toolCreationCallback(Vrui::ToolManager::ToolCreationCallbackData * callbackData) {
     /* Check if the new tool is a locator tool: */
     Vrui::LocatorTool* locatorTool = dynamic_cast<Vrui::LocatorTool*> (callbackData->tool);
     if (locatorTool != 0) {
@@ -431,7 +507,7 @@ void VruiVTK::toolCreationCallback(Vrui::ToolManager::ToolCreationCallbackData *
 }
 
 //----------------------------------------------------------------------------
-void VruiVTK::toolDestructionCallback(Vrui::ToolManager::ToolDestructionCallbackData * callbackData) {
+void GeometryViewer::toolDestructionCallback(Vrui::ToolManager::ToolDestructionCallbackData * callbackData) {
     /* Check if the to-be-destroyed tool is a locator tool: */
     Vrui::LocatorTool* locatorTool = dynamic_cast<Vrui::LocatorTool*> (callbackData->tool);
     if (locatorTool != 0) {

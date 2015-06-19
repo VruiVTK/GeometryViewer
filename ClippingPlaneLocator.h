@@ -2,10 +2,8 @@
 #define CLIPPINGPLANELOCATOR_H_
 
 #include "BaseLocator.h"
-#include "VruiVTK.h"
-
-/* Vrui includes */
 #include <Vrui/LocatorTool.h>
+#include "GeometryViewer.h"
 
 // Begin forward declarations
 class ClippingPlane;
@@ -13,7 +11,7 @@ class ClippingPlane;
 class ClippingPlaneLocator : public BaseLocator {
 public:
 	ClippingPlaneLocator(Vrui::LocatorTool* locatorTool,
-			VruiVTK * VruiVTK);
+			GeometryViewer * _geometryViewer);
 	~ClippingPlaneLocator(void);
 	virtual void buttonPressCallback(
 			Vrui::LocatorTool::ButtonPressCallbackData* callbackData);

@@ -47,9 +47,15 @@ SET(${PROJECT_NAME}_SRCS
   ClippingPlane.h
   ClippingPlaneLocator.cpp
   ClippingPlaneLocator.h
+  GeometryViewer.cpp
+  GeometryViewer.h
+  Lighting.cpp
+  Lighting.h
   main.cpp
-  VruiVTK.cpp
-  VruiVTK.h
+  RGBAColor.cpp
+  RGBAColor.h
+  SwatchesWidget.cpp
+  SwatchesWidget.h
   )
 
 ADD_EXECUTABLE(${PROJECT_NAME} ${${PROJECT_NAME}_SRCS})

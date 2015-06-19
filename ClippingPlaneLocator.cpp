@@ -1,28 +1,30 @@
 #include <iostream>
 
+// GeometryViewer includes
+#include "GeometryViewer.h"
+
+#include "BaseLocator.h"
+#include "ClippingPlane.h"
+#include "ClippingPlaneLocator.h"
+
 /* Vrui includes */
 #include <Vrui/LocatorTool.h>
 #include <Geometry/Point.h>
 #include <Geometry/Vector.h>
 #include <Geometry/OrthogonalTransformation.h>
 
-#include "BaseLocator.h"
-#include "ClippingPlane.h"
-#include "ClippingPlaneLocator.h"
-#include "VruiVTK.h"
-
 /*
  * ClippingPlaneLocator - Constructor for ClippingPlaneLocator class.
  *
  * parameter locatorTool - Vrui::LocatorTool *
- * parameter VruiVTK - VruiVTK *
+ * parameter _geometryViewer - GeometryViewer *
  */
 ClippingPlaneLocator::ClippingPlaneLocator(Vrui::LocatorTool * locatorTool,
-		VruiVTK* VruiVTK) :
-	BaseLocator(locatorTool, VruiVTK), clippingPlane(0) {
+		GeometryViewer* _geometryViewer) :
+	BaseLocator(locatorTool, _geometryViewer), clippingPlane(0) {
 	/* Find a clipping plane index for this locator: */
-	ClippingPlane * clippingPlanes = VruiVTK->getClippingPlanes();
-	for (int i=0; i<VruiVTK->getNumberOfClippingPlanes(); ++i)
+	ClippingPlane * clippingPlanes = _geometryViewer->getClippingPlanes();
+	for (int i=0; i<_geometryViewer->getNumberOfClippingPlanes(); ++i)
 		if (!clippingPlanes[i].isAllocated()) {
 			clippingPlane=&clippingPlanes[i];
 			break;
