@@ -6,7 +6,15 @@ ENDIF()
 
 PROJECT(GeometryViewer)
 
+set(CMAKE_MODULE_PATH
+  "${GeometryViewer_SOURCE_DIR}/CMake/Modules"
+  ${CMAKE_MODULE_PATH}
+)
+
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+# Use c++11:
+set(CMAKE_CXX_STANDARD 11)
 
 INCLUDE(FindPkgConfig)
 
@@ -35,6 +43,10 @@ IF (${VTK_RENDERING_BACKEND} STREQUAL "OpenGL")
   INCLUDE_DIRECTORIES (${GLEW_INCLUDE_DIR})
 ENDIF ()
 
+# Find vtkVRUI
+find_package(vtkVRUI REQUIRED)
+include_directories(${vtkVRUI_INCLUDE_DIRS})
+
 # add the automatically determined parts of the RPATH
 # which point to directories outside the build tree to the install RPATH
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
@@ -42,25 +54,24 @@ INCLUDE(InstallRequiredSystemLibraries)
 
 SET(${PROJECT_NAME}_SRCS
   BaseLocator.cpp
-  BaseLocator.h
   ClippingPlane.cpp
-  ClippingPlane.h
   ClippingPlaneLocator.cpp
-  ClippingPlaneLocator.h
   GeometryViewer.cpp
-  GeometryViewer.h
+  gvApplicationState.cpp
+  gvContextState.cpp
   Lighting.cpp
-  Lighting.h
   main.cpp
   RGBAColor.cpp
-  RGBAColor.h
   SwatchesWidget.cpp
-  SwatchesWidget.h
   )
 
 ADD_EXECUTABLE(${PROJECT_NAME} ${${PROJECT_NAME}_SRCS})
 
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${VTK_LIBRARIES} "${VRUI_LDFLAGS}")
+TARGET_LINK_LIBRARIES(${PROJECT_NAME}
+  ${vtkVRUI_LIBRARIES}
+  ${VTK_LIBRARIES}
+  "${VRUI_LDFLAGS}"
+)
 
 IF (${VTK_RENDERING_BACKEND} STREQUAL "OpenGL")
   TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${GLEW_LIBRARY})

@@ -12,6 +12,8 @@ void printUsage(void)
   std::cout << "\nWhere:" << std::endl;
   std::cout << "\t-f <string>, -fileName <string>" << std::endl;
   std::cout << "\tName of OBJ file to load using VTK.\n" << std::endl;
+  std::cout << "\t-showfps" << std::endl;
+  std::cout << "\tShow the FPS display by default.\n" << std::endl;
   std::cout << "\t-h, -help" << std::endl;
   std::cout << "\tDisplay this usage information and exit." << std::endl;
   std::cout << "\nAdditionally, all the commandline switches the VRUI " <<
@@ -32,6 +34,7 @@ int main(int argc, char* argv[])
   try
     {
     std::string name;
+    bool showFPS = false;
     if(argc > 1)
       {
       /* Parse the command-line arguments */
@@ -42,6 +45,10 @@ int main(int argc, char* argv[])
           name.assign(argv[i+1]);
           ++i;
           }
+        if(strcmp(argv[i], "-showfps")==0)
+          {
+          showFPS = true;
+          }
         if(strcmp(argv[i],"-h")==0 || strcmp(argv[i], "-help")==0)
           {
           printUsage();
@@ -51,6 +58,8 @@ int main(int argc, char* argv[])
       }
 
     GeometryViewer application(argc, argv);
+    application.setShowFPS(showFPS);
+    application.initialize();
     if(!name.empty())
       {
       application.setFileName(name.c_str());

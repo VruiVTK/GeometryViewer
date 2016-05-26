@@ -7,6 +7,8 @@
 
 #include <GL/gl.h>
 
+#include <vvApplication.h>
+
 // Vrui includes
 #include <GL/GLObject.h>
 #include <GLMotif/PopupWindow.h>
@@ -34,26 +36,11 @@ class RGBAColor;
 class vtkExternalLight;
 class vtkLight;
 
-class GeometryViewer:public Vrui::Application,public GLObject
+class GeometryViewer : public vvApplication
 {
 /* Embedded classes: */
   typedef std::vector<BaseLocator*> BaseLocatorList;
 private:
-  struct DataItem : public GLObject::DataItem
-  {
-  /* Elements */
-  public:
-    /* VTK components */
-    vtkSmartPointer<ExternalVTKWidget> externalVTKWidget;
-    vtkSmartPointer<vtkExternalLight> externalLight;
-    vtkSmartPointer<vtkActor> actor;
-    vtkSmartPointer<vtkLight> flashlight;
-
-    /* Constructor and destructor*/
-    DataItem(void);
-    virtual ~DataItem(void);
-  };
-
   /* Elements: */
   GLMotif::PopupMenu* mainMenu; // The program's main menu
   GLMotif::PopupMenu* createMainMenu(void);
@@ -106,6 +93,8 @@ private:
 
   /* Constructors and destructors: */
 public:
+  using Superclass = vvApplication;
+
   GeometryViewer(int& argc,char**& argv);
   virtual ~GeometryViewer(void);
 
@@ -123,9 +112,11 @@ public:
   double * getFlashlightDirection(void);
 
   /* Methods to manage render context */
-  virtual void initContext(GLContextData& contextData) const;
-  virtual void display(GLContextData& contextData) const;
-  virtual void frame(void);
+  void initialize() override;
+  void initContext(GLContextData& contextData) const override;
+  void display(GLContextData& contextData) const override;
+  void frame() override;
+
 
   /* Callback methods */
   void centerDisplayCallback(Misc::CallbackData* cbData);
@@ -143,6 +134,9 @@ public:
 
   virtual void toolCreationCallback(Vrui::ToolManager::ToolCreationCallbackData* cbData);
   virtual void toolDestructionCallback(Vrui::ToolManager::ToolDestructionCallbackData* cbData);
+
+protected:
+  vvContextState* createContextState() const override;
 };
 
 #endif //_GEOMETRYVIEWER_H
